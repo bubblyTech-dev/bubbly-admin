@@ -6,6 +6,8 @@ const paths = {
   root: rootPaths.root,
   starter: `/starter`,
   users: `/users`,
+  userDetail: `/users/:uuid`,
+  auditLogs: `/audit-logs`,
   account: `/account`,
   login: `/login`,
   forgotPassword: `/forgot-password`,
@@ -15,5 +17,8 @@ const paths = {
 
   404: `/404`,
 };
+
+// the address of one staff member
+export const userPath = (uuid: string) => `/users/${uuid}`;
 
 export default paths;

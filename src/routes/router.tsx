@@ -5,11 +5,13 @@ import AuthLayout from 'layouts/auth-layout';
 import MainLayout from 'layouts/main-layout';
 import Page404 from 'pages/errors/Page404';
 import PageLoader from 'components/loading/PageLoader';
-import { GuestOnly, RequireAuth } from './guards';
+import { GuestOnly, RequireAuth, RequirePermission } from './guards';
 import paths from './paths';
 
 const Analytics = lazy(() => import('pages/dashboard/Analytics'));
 const UserList = lazy(() => import('pages/users/UserList'));
+const UserDetail = lazy(() => import('pages/users/UserDetail'));
+const AuditLogs = lazy(() => import('pages/audit/AuditLogs'));
 const Starter = lazy(() => import('pages/others/Starter'));
 const Account = lazy(() => import('pages/others/Account'));
 
@@ -45,7 +47,17 @@ export const routes: RouteObject[] = [
             ),
             children: [
               { index: true, element: <Analytics /> },
-              { path: paths.users, element: <UserList /> },
+              {
+                element: <RequirePermission permission="users_access.view" />,
+                children: [
+                  { path: paths.users, element: <UserList /> },
+                  { path: paths.userDetail, element: <UserDetail /> },
+                ],
+              },
+              {
+                element: <RequirePermission permission="audit.view" />,
+                children: [{ path: paths.auditLogs, element: <AuditLogs /> }],
+              },
               { path: paths.account, element: <Account /> },
               { path: paths.starter, element: <Starter /> },
             ],

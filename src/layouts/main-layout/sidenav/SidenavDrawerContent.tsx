@@ -3,8 +3,9 @@ import { Divider, IconButton } from '@mui/material';
 import Box from '@mui/material/Box';
 import List from '@mui/material/List';
 import Toolbar from '@mui/material/Toolbar';
+import { useAuth } from 'providers/AuthProvider';
 import { useSettingsContext } from 'providers/SettingsProvider';
-import sitemap from 'routes/sitemap';
+import sitemap, { filterByPermission } from 'routes/sitemap';
 import IconifyIcon from 'components/base/IconifyIcon';
 import Logo from 'components/common/Logo';
 import NavItem from './NavItem';
@@ -19,6 +20,7 @@ const SidenavDrawerContent = ({ variant = 'permanent' }: SidenavDrawerContentPro
     config: { sidenavCollapsed, openNavbarDrawer },
     setConfig,
   } = useSettingsContext();
+  const { hasPermission } = useAuth();
 
   const expanded = useMemo(
     () => variant === 'temporary' || (variant === 'permanent' && !sidenavCollapsed),
@@ -96,7 +98,7 @@ const SidenavDrawerContent = ({ variant = 'permanent' }: SidenavDrawerContentPro
                       gap: '2px',
                     }}
                   >
-                    {menu.items.map((item) => (
+                    {filterByPermission(menu.items, hasPermission).map((item) => (
                       <NavItem key={item.pathName} item={item} level={0} />
                     ))}
                   </List>

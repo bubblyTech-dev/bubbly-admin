@@ -1,5 +1,6 @@
 import { PropsWithChildren } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router';
+import NoAccess from 'pages/errors/NoAccess';
 import { useAuth } from 'providers/AuthProvider';
 import PageLoader from 'components/loading/PageLoader';
 import paths from './paths';
@@ -38,6 +39,13 @@ export const GuestOnly = () => {
     return <Navigate to={user.mustChangePassword ? paths.changePassword : paths.starter} replace />;
   }
   return <Outlet />;
+};
+
+// Wraps routes that need a permission. The backend still enforces it; this only shows a clear message.
+//   { element: <RequirePermission permission="users_access.view" />, children: [...] }
+export const RequirePermission = ({ permission }: { permission: string }) => {
+  const { hasPermission } = useAuth();
+  return hasPermission(permission) ? <Outlet /> : <NoAccess />;
 };
 
 // Hides a piece of UI unless the admin has the permission (the backend still enforces it).

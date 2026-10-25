@@ -10,6 +10,8 @@ export interface SubMenuItem {
   path?: string;
   target?: HTMLAttributeAnchorTarget;
   active?: boolean;
+  /** permission key an admin needs to see this item (the master always sees it) */
+  permission?: string;
   icon?: string;
   iconSx?: SxProps;
   items?: SubMenuItem[];
@@ -43,6 +45,15 @@ const sitemap: MenuItem[] = [
         pathName: 'users',
         icon: 'material-symbols:account-box-outline',
         active: true,
+        permission: 'users_access.view',
+      },
+      {
+        name: 'Audit Log',
+        path: paths.auditLogs,
+        pathName: 'audit-logs',
+        icon: 'material-symbols:history-rounded',
+        active: true,
+        permission: 'audit.view',
       },
       {
         name: 'Starter',
@@ -139,5 +150,16 @@ const sitemap: MenuItem[] = [
     ],
   },
 ];
+
+// the items an admin may see (children are filtered too)
+export const filterByPermission = (
+  items: SubMenuItem[],
+  hasPermission: (key: string) => boolean,
+): SubMenuItem[] =>
+  items
+    .filter((item) => !item.permission || hasPermission(item.permission))
+    .map((item) =>
+      item.items ? { ...item, items: filterByPermission(item.items, hasPermission) } : item,
+    );
 
 export default sitemap;

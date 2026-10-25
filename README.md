@@ -52,6 +52,7 @@ src/
 ├── components/   shared and section components (base, common, sections, settings-panel)
 ├── data/         demo data (to be replaced by API calls)
 ├── hooks/  providers/  reducers/  lib/  types/
+├── services/     one file per API area (axios): auth, profile, files, staff, audit
 ├── layouts/      main-layout (sidenav, topbar, footer) and auth-layout
 ├── pages/        dashboard, users, account, starter, authentication, errors
 ├── routes/       router, paths and sitemap (sidebar menu)
@@ -60,6 +61,14 @@ public/           static assets
 ```
 
 Absolute imports are enabled (for example `import paths from 'routes/paths'`).
+
+## Users & Access
+
+- **Users** (`/users`, needs `users_access.view`): staff list with search, status filter and pages; add, edit, activate or deactivate, delete. Add staff takes you to the detail page to choose permissions.
+- **Staff detail** (`/users/:uuid`): Details, **Permissions** (checklist per module; you can only tick what you hold yourself, other boxes are greyed out), **Sessions** (end one or all) and **Login history**. Each tab only shows with its permission. Set a new password and activate or deactivate are buttons at the top.
+- **Audit Log** (`/audit-logs`, needs `audit.view`): filter by action, record, dates and text; click a row to see before and after.
+- Menu items carry an optional `permission` in `routes/sitemap.ts`; items the admin lacks are hidden. `RequirePermission` in `routes/guards.tsx` shows a "no access" page. The backend enforces the same permissions.
+- Needs the backend migration `20261025000107-create-audit-logs-table.js` (run `npm run migration` in the backend).
 
 ## Theming and layout
 
@@ -93,10 +102,9 @@ Removed or replaced so nothing depends on the template author's services or paid
 
 ## To do before production
 
-- Replace demo data and the fake login with real API calls and JWT auth
+- Replace the remaining demo pages and data (Dashboard) with real API calls
 - Replace the placeholder logo and demo illustrations with Bubbly assets (the logo and favicon are already Bubbly's)
 - Self-host the Google Fonts currently loaded in `index.html` (privacy and speed)
-- Wire role-based routes for the Super Admin and staff roles
 - Add a real documentation link or remove remaining demo pages
 
 ## License and credits

@@ -165,7 +165,7 @@ const NavItem = ({ item, level }: NavItemProps) => {
             <ListItemIcon
               sx={{
                 '& .iconify': {
-                  fontSize: sidenavCollapsed ? 24 : 14,
+                  fontSize: sidenavCollapsed ? 24 : 18,
                 },
               }}
             >
@@ -192,7 +192,7 @@ const NavItem = ({ item, level }: NavItemProps) => {
               sx={[
                 {
                   [`& .${listItemTextClasses.primary}`]: {
-                    typography: 'caption',
+                    typography: sidenavCollapsed ? 'caption' : 'body2',
                     fontWeight: 'medium',
                     whiteSpace: 'nowrap',
                     lineHeight: 1.3,

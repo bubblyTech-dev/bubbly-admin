@@ -1,37 +1,57 @@
-import Button from '@mui/material/Button';
-import Paper from '@mui/material/Paper';
-import Stack from '@mui/material/Stack';
-import paths from 'routes/paths';
-import UserListContainer from 'components/sections/user-table';
-import PageHeader from 'components/sections/user-table/PageHeader';
+import { useState } from 'react';
+import { useNavigate } from 'react-router';
+import { Button, Paper, Stack } from '@mui/material';
+import { useAuth } from 'providers/AuthProvider';
+import paths, { userPath } from 'routes/paths';
+import IconifyIcon from 'components/base/IconifyIcon';
+import PageHeader from 'components/common/PageHeader';
+import StaffFormDialog from 'components/sections/staff/StaffFormDialog';
+import StaffTable from 'components/sections/staff/StaffTable';
 
 const UserList = () => {
+  const navigate = useNavigate();
+  const { hasPermission } = useAuth();
+
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [adding, setAdding] = useState(false);
+
+  const refresh = () => setRefreshKey((key) => key + 1);
+
   return (
     <Stack direction="column" height={1}>
       <PageHeader
-        title="User list"
+        title="Users"
         breadcrumb={[
           { label: 'Home', url: paths.root },
           { label: 'Users', active: true },
         ]}
         actionComponent={
-          <Stack
-            sx={{
-              gap: 1,
-            }}
-          >
-            <Button variant="soft" color="neutral">
-              Export
+          hasPermission('users_access.create') ? (
+            <Button
+              variant="contained"
+              startIcon={<IconifyIcon icon="material-symbols:person-add-outline-rounded" />}
+              onClick={() => setAdding(true)}
+            >
+              Add staff
             </Button>
-            <Button variant="soft" color="neutral">
-              Import
-            </Button>
-          </Stack>
+          ) : undefined
         }
       />
       <Paper sx={{ flex: 1, p: { xs: 3, md: 5 } }}>
-        <UserListContainer />
+        <StaffTable refreshKey={refreshKey} onChanged={refresh} />
       </Paper>
+
+      <StaffFormDialog
+        open={adding}
+        staff={null}
+        onClose={() => setAdding(false)}
+        onSaved={(staff) => {
+          setAdding(false);
+          refresh();
+          // the next step is choosing what they may do
+          if (hasPermission('users_access.permissions')) navigate(userPath(staff.uuid));
+        }}
+      />
     </Stack>
   );
 };
