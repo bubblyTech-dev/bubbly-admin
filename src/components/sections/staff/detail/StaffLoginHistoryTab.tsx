@@ -14,6 +14,7 @@ import { parseApiError } from 'lib/api';
 import { formatDateTime } from 'lib/format';
 import { staffService } from 'services/staffService';
 import { LoginHistoryEntry, PaginationMeta, StaffUser } from 'types/staff';
+import TableEmptyRow from 'components/common/TableEmptyRow';
 import TablePager from 'components/common/TablePager';
 
 const failureReasons: Record<number, string> = {
@@ -87,11 +88,7 @@ const StaffLoginHistoryTab = ({ staff }: { staff: StaffUser }) => {
               </TableRow>
             ))}
             {!loading && rows.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={4} align="center" sx={{ py: 6, color: 'text.secondary' }}>
-                  No logins yet.
-                </TableCell>
-              </TableRow>
+              <TableEmptyRow colSpan={4} message="No logins yet." />
             )}
           </TableBody>
         </Table>

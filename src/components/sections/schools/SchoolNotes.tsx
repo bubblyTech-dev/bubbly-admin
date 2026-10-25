@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Alert, Box, Button, Pagination, Paper, Stack, TextField, Typography } from '@mui/material';
+import { Alert, Box, Button, Paper, Stack, TextField, Typography } from '@mui/material';
 import dayjs from 'dayjs';
 import { parseApiError } from 'lib/api';
 import { schoolService } from 'services/schoolService';
 import { PageMeta, SchoolNote } from 'types/school';
+import TablePager from 'components/common/TablePager';
 import PageLoader from 'components/loading/PageLoader';
 
 const PER_PAGE = 10;
@@ -102,12 +103,8 @@ const SchoolNotes = ({ schoolUuid }: { schoolUuid: string }) => {
         </Stack>
       )}
 
-      {meta && meta.lastPage > 1 && (
-        <Pagination
-          count={meta.lastPage}
-          page={meta.page}
-          onChange={(_event, value) => setPage(value)}
-        />
+      {meta && (
+        <TablePager page={meta.page} perPage={meta.perPage} total={meta.total} onChange={setPage} />
       )}
     </Stack>
   );

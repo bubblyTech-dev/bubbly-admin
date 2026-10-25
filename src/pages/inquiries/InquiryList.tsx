@@ -3,8 +3,6 @@ import {
   Alert,
   Chip,
   FormControlLabel,
-  InputAdornment,
-  MenuItem,
   Paper,
   Stack,
   Switch,
@@ -14,11 +12,12 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  TextField,
   Typography,
 } from '@mui/material';
 import { parseApiError } from 'lib/api';
+import { formatDate } from 'lib/format';
 import { useAuth } from 'providers/AuthProvider';
+import paths from 'routes/paths';
 import { inquiryService } from 'services/inquiryService';
 import {
   INQUIRY_SOURCE_LABELS,
@@ -29,7 +28,11 @@ import {
   InquiryFilters,
   PageMeta,
 } from 'types/inquiries';
-import IconifyIcon from 'components/base/IconifyIcon';
+import FilterSelect from 'components/common/FilterSelect';
+import PageHeader from 'components/common/PageHeader';
+import RowActionsCell from 'components/common/RowActionsCell';
+import SearchField from 'components/common/SearchField';
+import TableEmptyRow from 'components/common/TableEmptyRow';
 import TablePager from 'components/common/TablePager';
 import InquiryDrawer from 'components/sections/inquiries/InquiryDrawer';
 import InquiryStatusChip from 'components/sections/inquiries/InquiryStatusChip';
@@ -126,148 +129,133 @@ const InquiryList = () => {
   ];
 
   return (
-    <Paper sx={{ flex: 1, p: { xs: 3, md: 5 } }}>
-      <Stack direction="column" spacing={3}>
-        <div>
-          <Typography variant="h4" sx={{ mb: 0.5 }}>
-            Inquiries
-          </Typography>
-          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-            Messages from the contact, demo and pricing forms on the website.
-          </Typography>
-        </div>
+    <Stack direction="column" height={1}>
+      <PageHeader
+        title="Inquiries"
+        breadcrumb={[
+          { label: 'Home', url: paths.root },
+          { label: 'Inquiries', active: true },
+        ]}
+      />
 
-        <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 1 }}>
-          {chipItems.map((item) => (
-            <Chip
-              key={item.label}
-              clickable
-              color={filters.status === item.status ? 'primary' : 'default'}
-              variant={filters.status === item.status ? 'filled' : 'outlined'}
-              label={`${item.label}${item.count === undefined ? '' : ` (${item.count})`}`}
-              onClick={() => changeFilter({ status: item.status })}
-            />
-          ))}
-        </Stack>
-
-        <Stack
-          direction={{ xs: 'column', md: 'row' }}
-          spacing={2}
-          sx={{ alignItems: { md: 'center' } }}
-        >
-          <TextField
-            size="small"
-            placeholder="Search name, email, school or message"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            sx={{ minWidth: { md: 320 } }}
-            slotProps={{
-              input: {
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <IconifyIcon icon="material-symbols:search-rounded" />
-                  </InputAdornment>
-                ),
-              },
-            }}
-          />
-          <TextField
-            select
-            size="small"
-            label="Source"
-            value={filters.source}
-            onChange={(e) =>
-              changeFilter({ source: e.target.value === '' ? '' : Number(e.target.value) })
-            }
-            sx={{ minWidth: 180 }}
-          >
-            <MenuItem value="">All sources</MenuItem>
-            {Object.entries(INQUIRY_SOURCE_LABELS).map(([value, label]) => (
-              <MenuItem key={value} value={Number(value)}>
-                {label}
-              </MenuItem>
-            ))}
-          </TextField>
-          <FormControlLabel
-            control={
-              <Switch
-                checked={filters.mine}
-                onChange={(e) => changeFilter({ mine: e.target.checked })}
+      <Paper sx={{ flex: 1, p: { xs: 3, md: 5 } }}>
+        <Stack direction="column" spacing={3}>
+          <Stack direction="row" sx={{ flexWrap: 'wrap', gap: 1 }}>
+            {chipItems.map((item) => (
+              <Chip
+                key={item.label}
+                clickable
+                color={filters.status === item.status ? 'primary' : 'default'}
+                variant={filters.status === item.status ? 'filled' : 'outlined'}
+                label={`${item.label}${item.count === undefined ? '' : ` (${item.count})`}`}
+                onClick={() => changeFilter({ status: item.status })}
+                sx={{
+                  height: 40,
+                  borderRadius: 999,
+                  fontWeight: 600,
+                  fontSize: 'body2.fontSize',
+                  '& .MuiChip-label': { px: 2.5 },
+                }}
               />
-            }
-            label="Assigned to me"
-          />
-        </Stack>
+            ))}
+          </Stack>
 
-        {error && <Alert severity="error">{error}</Alert>}
+          <Stack
+            direction={{ xs: 'column', md: 'row' }}
+            spacing={2}
+            sx={{ alignItems: { md: 'center' } }}
+          >
+            <SearchField
+              value={search}
+              placeholder="Search name, email, school or message"
+              onChange={setSearch}
+            />
+            <FilterSelect
+              label="Source"
+              value={filters.source}
+              allLabel="All sources"
+              options={Object.entries(INQUIRY_SOURCE_LABELS).map(([value, label]) => ({
+                value: Number(value),
+                label,
+              }))}
+              onChange={(value) => changeFilter({ source: value === '' ? '' : Number(value) })}
+            />
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={filters.mine}
+                  onChange={(e) => changeFilter({ mine: e.target.checked })}
+                />
+              }
+              label="Assigned to me"
+            />
+          </Stack>
 
-        <TableContainer>
-          <Table size="medium">
-            <TableHead>
-              <TableRow>
-                <TableCell>Name</TableCell>
-                <TableCell>School</TableCell>
-                <TableCell>Source</TableCell>
-                <TableCell>Status</TableCell>
-                <TableCell>Assigned to</TableCell>
-                <TableCell>Received</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {rows.map((row) => (
-                <TableRow
-                  key={row.uuid}
-                  hover
-                  sx={{ cursor: 'pointer' }}
-                  onClick={() => setSelected(row.uuid)}
-                >
-                  <TableCell>
-                    <Typography
-                      variant="subtitle2"
-                      sx={{ fontWeight: row.status === INQUIRY_STATUS.NEW ? 700 : 500 }}
-                    >
-                      {row.name}
-                    </Typography>
-                    <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                      {row.email}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>{row.schoolName || '-'}</TableCell>
-                  <TableCell>{INQUIRY_SOURCE_LABELS[row.source]}</TableCell>
-                  <TableCell>
-                    <InquiryStatusChip status={row.status} />
-                  </TableCell>
-                  <TableCell>
-                    {row.assignedTo ? row.assignedTo.name || row.assignedTo.email : '-'}
-                  </TableCell>
-                  <TableCell>{new Date(row.createdAt).toLocaleDateString()}</TableCell>
-                </TableRow>
-              ))}
-              {!loading && rows.length === 0 && (
+          {error && <Alert severity="error">{error}</Alert>}
+
+          <TableContainer>
+            <Table sx={{ minWidth: 720 }}>
+              <TableHead>
                 <TableRow>
-                  <TableCell colSpan={6}>
-                    <Typography
-                      variant="body2"
-                      sx={{ color: 'text.secondary', py: 3, textAlign: 'center' }}
-                    >
-                      No inquiries found.
-                    </Typography>
-                  </TableCell>
+                  <TableCell>Name</TableCell>
+                  <TableCell>School</TableCell>
+                  <TableCell>Source</TableCell>
+                  <TableCell>Status</TableCell>
+                  <TableCell>Assigned to</TableCell>
+                  <TableCell>Received</TableCell>
+                  <TableCell align="right" />
                 </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
+              </TableHead>
+              <TableBody sx={{ opacity: loading ? 0.5 : 1 }}>
+                {rows.map((row) => (
+                  <TableRow
+                    key={row.uuid}
+                    hover
+                    sx={{ cursor: 'pointer' }}
+                    onClick={() => setSelected(row.uuid)}
+                  >
+                    <TableCell>
+                      <Typography
+                        variant="subtitle2"
+                        sx={{ fontWeight: row.status === INQUIRY_STATUS.NEW ? 700 : 500 }}
+                      >
+                        {row.name}
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                        {row.email}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>{row.schoolName || '-'}</TableCell>
+                    <TableCell>{INQUIRY_SOURCE_LABELS[row.source]}</TableCell>
+                    <TableCell>
+                      <InquiryStatusChip status={row.status} />
+                    </TableCell>
+                    <TableCell>
+                      {row.assignedTo ? row.assignedTo.name || row.assignedTo.email : '-'}
+                    </TableCell>
+                    <TableCell>{formatDate(row.createdAt)}</TableCell>
+                    <RowActionsCell
+                      actions={[{ label: 'View', onClick: () => setSelected(row.uuid) }]}
+                    />
+                  </TableRow>
+                ))}
+                {!loading && rows.length === 0 && (
+                  <TableEmptyRow colSpan={7} message="No inquiries found." />
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
 
-        <TablePager page={page} perPage={PER_PAGE} total={meta?.total ?? 0} onChange={setPage} />
-      </Stack>
+          <TablePager page={page} perPage={PER_PAGE} total={meta?.total ?? 0} onChange={setPage} />
+        </Stack>
+      </Paper>
 
       <InquiryDrawer
         uuid={selected}
         onClose={() => setSelected(null)}
         onChanged={() => void load()}
       />
-    </Paper>
+    </Stack>
   );
 };
 

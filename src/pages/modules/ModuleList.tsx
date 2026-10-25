@@ -8,7 +8,6 @@ import {
   DialogContent,
   DialogTitle,
   FormControlLabel,
-  IconButton,
   Paper,
   Stack,
   Switch,
@@ -19,7 +18,6 @@ import {
   TableHead,
   TableRow,
   TextField,
-  Tooltip,
   Typography,
 } from '@mui/material';
 import { parseApiError } from 'lib/api';
@@ -27,14 +25,17 @@ import { useAuth } from 'providers/AuthProvider';
 import paths from 'routes/paths';
 import { moduleService } from 'services/moduleService';
 import { PlanModule } from 'types/plans';
-import IconifyIcon from 'components/base/IconifyIcon';
 import PageHeader from 'components/common/PageHeader';
+import RowActionsCell from 'components/common/RowActionsCell';
+import SearchField from 'components/common/SearchField';
+import TableEmptyRow from 'components/common/TableEmptyRow';
 
 const ModuleList = () => {
   const { hasPermission } = useAuth();
   const canEdit = hasPermission('modules.edit');
 
   const [modules, setModules] = useState<PlanModule[]>([]);
+  const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
@@ -95,6 +96,16 @@ const ModuleList = () => {
     setSaving(false);
   };
 
+  // the list is short, so it is searched here instead of asking the server
+  const needle = search.trim().toLowerCase();
+  const visibleModules = needle
+    ? modules.filter(
+        (module) =>
+          module.name.toLowerCase().includes(needle) ||
+          module.moduleKey.toLowerCase().includes(needle),
+      )
+    : modules;
+
   return (
     <Stack direction="column" height={1}>
       <PageHeader
@@ -118,26 +129,31 @@ const ModuleList = () => {
             modules are part of every plan.
           </Typography>
 
+          <SearchField value={search} placeholder="Search modules" onChange={setSearch} />
+
           <TableContainer>
-            <Table>
+            <Table sx={{ minWidth: 720 }}>
               <TableHead>
                 <TableRow>
                   <TableCell>Module</TableCell>
                   <TableCell>Description</TableCell>
                   <TableCell>Order</TableCell>
                   <TableCell>Status</TableCell>
-                  {canEdit && <TableCell align="right">Actions</TableCell>}
+                  <TableCell align="right" />
                 </TableRow>
               </TableHead>
-              <TableBody>
-                {modules.map((module) => (
-                  <TableRow key={module.uuid} hover>
+              <TableBody sx={{ opacity: loading ? 0.5 : 1 }}>
+                {visibleModules.map((module) => (
+                  <TableRow
+                    key={module.uuid}
+                    hover
+                    onClick={canEdit ? () => handleEdit(module) : undefined}
+                    sx={{ cursor: canEdit ? 'pointer' : 'default' }}
+                  >
                     <TableCell>
                       <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
                         <div>
-                          <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-                            {module.name}
-                          </Typography>
+                          <Typography variant="subtitle2">{module.name}</Typography>
                           <Typography variant="caption" sx={{ color: 'text.secondary' }}>
                             {module.moduleKey}
                           </Typography>
@@ -153,30 +169,22 @@ const ModuleList = () => {
                         color={module.status === 1 ? 'success' : 'default'}
                       />
                     </TableCell>
-                    {canEdit && (
-                      <TableCell align="right">
-                        <Tooltip title="Edit">
-                          <IconButton
-                            size="small"
-                            aria-label="Edit"
-                            onClick={() => handleEdit(module)}
-                          >
-                            <IconifyIcon
-                              icon="material-symbols:edit-outline-rounded"
-                              sx={{ fontSize: 20 }}
-                            />
-                          </IconButton>
-                        </Tooltip>
-                      </TableCell>
-                    )}
+                    <RowActionsCell
+                      actions={[
+                        { label: 'Edit', visible: canEdit, onClick: () => handleEdit(module) },
+                      ]}
+                    />
                   </TableRow>
                 ))}
-                {!loading && modules.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={5} align="center" sx={{ py: 6, color: 'text.secondary' }}>
-                      No modules yet. Run the modules seeder on the server.
-                    </TableCell>
-                  </TableRow>
+                {!loading && visibleModules.length === 0 && (
+                  <TableEmptyRow
+                    colSpan={5}
+                    message={
+                      modules.length === 0
+                        ? 'No modules yet. Run the modules seeder on the server.'
+                        : 'No modules found.'
+                    }
+                  />
                 )}
               </TableBody>
             </Table>

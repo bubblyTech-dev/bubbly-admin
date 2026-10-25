@@ -2,16 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import {
   Alert,
-  Box,
   Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-  IconButton,
-  InputAdornment,
-  MenuItem,
   Paper,
   Stack,
   Table,
@@ -20,9 +11,9 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  TextField,
   Typography,
 } from '@mui/material';
+import useDebouncedValue from 'hooks/useDebouncedValue';
 import { parseApiError } from 'lib/api';
 import { formatDateTime } from 'lib/datetimeLocal';
 import { useAuth } from 'providers/AuthProvider';
@@ -37,6 +28,12 @@ import {
   announcementTypeLabels,
 } from 'types/announcements';
 import IconifyIcon from 'components/base/IconifyIcon';
+import ConfirmDialog from 'components/common/ConfirmDialog';
+import FilterSelect from 'components/common/FilterSelect';
+import PageHeader from 'components/common/PageHeader';
+import RowActionsCell from 'components/common/RowActionsCell';
+import SearchField from 'components/common/SearchField';
+import TableEmptyRow from 'components/common/TableEmptyRow';
 import TablePager from 'components/common/TablePager';
 import {
   AnnouncementStatusChip,
@@ -51,7 +48,6 @@ const AnnouncementList = () => {
   const [rows, setRows] = useState<Announcement[]>([]);
   const [meta, setMeta] = useState<PageMeta>({ page: 1, perPage: 15, total: 0, lastPage: 1 });
   const [search, setSearch] = useState('');
-  const [searchText, setSearchText] = useState('');
   const [status, setStatus] = useState('');
   const [type, setType] = useState('');
   const [page, setPage] = useState(1);
@@ -61,12 +57,14 @@ const AnnouncementList = () => {
   const [toDelete, setToDelete] = useState<Announcement | null>(null);
   const [busy, setBusy] = useState(false);
 
+  const debouncedSearch = useDebouncedValue(search);
+
   const load = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
       const result = await announcementService.list({
-        search: search || undefined,
+        search: debouncedSearch.trim() || undefined,
         status: status ? Number(status) : undefined,
         type: type ? Number(type) : undefined,
         page,
@@ -78,20 +76,16 @@ const AnnouncementList = () => {
       setError(parseApiError(err).message);
     }
     setLoading(false);
-  }, [search, status, type, page, perPage]);
+  }, [debouncedSearch, status, type, page, perPage]);
 
   useEffect(() => {
     void load();
   }, [load]);
 
-  // search runs a moment after typing stops
+  // a new search or filter starts again from the first page
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setSearch(searchText.trim());
-      setPage(1);
-    }, 350);
-    return () => clearTimeout(timer);
-  }, [searchText]);
+    setPage(1);
+  }, [debouncedSearch, status, type]);
 
   const runAction = async (action: () => Promise<unknown>) => {
     setBusy(true);
@@ -113,203 +107,155 @@ const AnnouncementList = () => {
   };
 
   return (
-    <Paper sx={{ p: { xs: 3, md: 5 } }}>
-      <Stack
-        direction={{ xs: 'column', sm: 'row' }}
-        spacing={2}
-        sx={{ justifyContent: 'space-between', alignItems: { sm: 'center' }, mb: 4 }}
-      >
-        <Typography variant="h4">Announcements</Typography>
-        {canManage && (
-          <Button
-            variant="contained"
-            startIcon={<IconifyIcon icon="material-symbols:add-rounded" />}
-            onClick={() => navigate(paths.announcementNew)}
-          >
-            New announcement
-          </Button>
-        )}
-      </Stack>
+    <Stack direction="column" height={1}>
+      <PageHeader
+        title="Announcements"
+        breadcrumb={[
+          { label: 'Home', url: paths.root },
+          { label: 'Announcements', active: true },
+        ]}
+        actionComponent={
+          canManage ? (
+            <Button
+              variant="contained"
+              startIcon={<IconifyIcon icon="material-symbols:add-rounded" />}
+              onClick={() => navigate(paths.announcementNew)}
+            >
+              New announcement
+            </Button>
+          ) : undefined
+        }
+      />
 
-      <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ mb: 3 }}>
-        <TextField
-          size="small"
-          placeholder="Search title or message"
-          value={searchText}
-          onChange={(e) => setSearchText(e.target.value)}
-          sx={{ flex: 1, minWidth: 220 }}
-          slotProps={{
-            input: {
-              startAdornment: (
-                <InputAdornment position="start">
-                  <IconifyIcon icon="material-symbols:search-rounded" />
-                </InputAdornment>
-              ),
-            },
-          }}
-        />
-        <TextField
-          select
-          size="small"
-          label="Status"
-          value={status}
-          onChange={(e) => {
-            setStatus(e.target.value);
-            setPage(1);
-          }}
-          sx={{ minWidth: 160 }}
-        >
-          <MenuItem value="">All</MenuItem>
-          {Object.entries(announcementStatusLabels).map(([value, label]) => (
-            <MenuItem key={value} value={value}>
-              {label}
-            </MenuItem>
-          ))}
-        </TextField>
-        <TextField
-          select
-          size="small"
-          label="Type"
-          value={type}
-          onChange={(e) => {
-            setType(e.target.value);
-            setPage(1);
-          }}
-          sx={{ minWidth: 160 }}
-        >
-          <MenuItem value="">All</MenuItem>
-          {Object.entries(announcementTypeLabels).map(([value, label]) => (
-            <MenuItem key={value} value={value}>
-              {label}
-            </MenuItem>
-          ))}
-        </TextField>
-      </Stack>
+      <Paper sx={{ flex: 1, p: { xs: 3, md: 5 } }}>
+        <Stack direction="column" spacing={3}>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+            <SearchField
+              value={search}
+              placeholder="Search title or message"
+              onChange={setSearch}
+            />
+            <FilterSelect
+              label="Status"
+              value={status}
+              options={Object.entries(announcementStatusLabels).map(([value, label]) => ({
+                value,
+                label,
+              }))}
+              onChange={setStatus}
+            />
+            <FilterSelect
+              label="Type"
+              value={type}
+              options={Object.entries(announcementTypeLabels).map(([value, label]) => ({
+                value,
+                label,
+              }))}
+              onChange={setType}
+            />
+          </Stack>
 
-      {error && (
-        <Alert severity="error" sx={{ mb: 3 }}>
-          {error}
-        </Alert>
-      )}
+          {error && <Alert severity="error">{error}</Alert>}
 
-      <TableContainer>
-        <Table size="small">
-          <TableHead>
-            <TableRow>
-              <TableCell>Title</TableCell>
-              <TableCell>Type</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>Audience</TableCell>
-              <TableCell>Visible from</TableCell>
-              <TableCell>Visible until</TableCell>
-              {canManage && <TableCell align="right">Actions</TableCell>}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {rows.map((row) => (
-              <TableRow key={row.uuid} hover>
-                <TableCell sx={{ maxWidth: 320 }}>
-                  <Typography
-                    variant="subtitle2"
-                    noWrap
+          <TableContainer>
+            <Table sx={{ minWidth: 720 }}>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Title</TableCell>
+                  <TableCell>Type</TableCell>
+                  <TableCell>Status</TableCell>
+                  <TableCell>Audience</TableCell>
+                  <TableCell>Visible from</TableCell>
+                  <TableCell>Visible until</TableCell>
+                  <TableCell align="right" />
+                </TableRow>
+              </TableHead>
+              <TableBody sx={{ opacity: loading ? 0.5 : 1 }}>
+                {rows.map((row) => (
+                  <TableRow
+                    key={row.uuid}
+                    hover
+                    onClick={() => navigate(`${paths.announcements}/${row.uuid}`)}
                     sx={{ cursor: 'pointer' }}
-                    onClick={() => navigate(`/announcements/${row.uuid}`)}
                   >
-                    {row.title}
-                  </Typography>
-                  <Typography
-                    variant="caption"
-                    noWrap
-                    sx={{ color: 'text.secondary', display: 'block' }}
-                  >
-                    {row.body}
-                  </Typography>
-                </TableCell>
-                <TableCell>
-                  <AnnouncementTypeChip type={row.type} />
-                </TableCell>
-                <TableCell>
-                  <AnnouncementStatusChip status={row.status} />
-                </TableCell>
-                <TableCell>{announcementTargetLabels[row.targetType]}</TableCell>
-                <TableCell>{formatDateTime(row.startsAt)}</TableCell>
-                <TableCell>{row.endsAt ? formatDateTime(row.endsAt) : 'No end'}</TableCell>
-                {canManage && (
-                  <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
-                    <IconButton
-                      size="small"
-                      title="Edit"
-                      aria-label="Edit"
-                      onClick={() => navigate(`/announcements/${row.uuid}`)}
-                    >
-                      <IconifyIcon icon="material-symbols:edit-outline-rounded" />
-                    </IconButton>
-                    {row.status === ANNOUNCEMENT_STATUS.DRAFT ? (
-                      <IconButton
-                        size="small"
-                        title="Publish"
-                        aria-label="Publish"
-                        disabled={busy}
-                        onClick={() => runAction(() => announcementService.publish(row.uuid))}
+                    <TableCell sx={{ maxWidth: 320 }}>
+                      <Typography variant="subtitle2" noWrap>
+                        {row.title}
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        noWrap
+                        sx={{ color: 'text.secondary', display: 'block' }}
                       >
-                        <IconifyIcon icon="material-symbols:send-outline-rounded" />
-                      </IconButton>
-                    ) : (
-                      <IconButton
-                        size="small"
-                        title="Unpublish"
-                        aria-label="Unpublish"
-                        disabled={busy}
-                        onClick={() => runAction(() => announcementService.unpublish(row.uuid))}
-                      >
-                        <IconifyIcon icon="material-symbols:visibility-off" />
-                      </IconButton>
-                    )}
-                    <IconButton
-                      size="small"
-                      title="Delete"
-                      aria-label="Delete"
-                      disabled={busy}
-                      onClick={() => setToDelete(row)}
-                    >
-                      <IconifyIcon icon="material-symbols:delete-outline-rounded" />
-                    </IconButton>
-                  </TableCell>
+                        {row.body}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <AnnouncementTypeChip type={row.type} />
+                    </TableCell>
+                    <TableCell>
+                      <AnnouncementStatusChip status={row.status} />
+                    </TableCell>
+                    <TableCell>{announcementTargetLabels[row.targetType]}</TableCell>
+                    <TableCell>{formatDateTime(row.startsAt)}</TableCell>
+                    <TableCell>{row.endsAt ? formatDateTime(row.endsAt) : 'No end'}</TableCell>
+                    <RowActionsCell
+                      actions={[
+                        {
+                          label: canManage ? 'Edit' : 'View',
+                          onClick: () => navigate(`${paths.announcements}/${row.uuid}`),
+                        },
+                        {
+                          label: 'Publish',
+                          visible: canManage && row.status === ANNOUNCEMENT_STATUS.DRAFT,
+                          disabled: busy,
+                          onClick: () =>
+                            void runAction(() => announcementService.publish(row.uuid)),
+                        },
+                        {
+                          label: 'Unpublish',
+                          visible: canManage && row.status !== ANNOUNCEMENT_STATUS.DRAFT,
+                          disabled: busy,
+                          onClick: () =>
+                            void runAction(() => announcementService.unpublish(row.uuid)),
+                        },
+                        {
+                          label: 'Delete',
+                          danger: true,
+                          visible: canManage,
+                          disabled: busy,
+                          onClick: () => setToDelete(row),
+                        },
+                      ]}
+                    />
+                  </TableRow>
+                ))}
+                {!loading && rows.length === 0 && (
+                  <TableEmptyRow colSpan={7} message="No announcements found." />
                 )}
-              </TableRow>
-            ))}
-            {!loading && rows.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={canManage ? 7 : 6}>
-                  <Box sx={{ py: 4, textAlign: 'center', color: 'text.secondary' }}>
-                    No announcements found.
-                  </Box>
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
+              </TableBody>
+            </Table>
+          </TableContainer>
 
-      <TablePager page={meta.page} perPage={meta.perPage} total={meta.total} onChange={setPage} />
+          <TablePager
+            page={meta.page}
+            perPage={meta.perPage}
+            total={meta.total}
+            onChange={setPage}
+          />
+        </Stack>
+      </Paper>
 
-      <Dialog open={Boolean(toDelete)} onClose={() => setToDelete(null)}>
-        <DialogTitle>Delete announcement?</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            &quot;{toDelete?.title}&quot; will be removed and schools will stop seeing it.
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button variant="soft" color="neutral" onClick={() => setToDelete(null)}>
-            Cancel
-          </Button>
-          <Button variant="contained" color="error" onClick={handleDelete}>
-            Delete
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </Paper>
+      <ConfirmDialog
+        open={Boolean(toDelete)}
+        title="Delete announcement?"
+        message={`"${toDelete?.title}" will be removed and schools will stop seeing it.`}
+        confirmLabel="Delete"
+        color="error"
+        onConfirm={() => void handleDelete()}
+        onClose={() => setToDelete(null)}
+      />
+    </Stack>
   );
 };
 

@@ -68,7 +68,7 @@ const SideTabList = ({ setShowTabList, handleChange, sx }: SideTabListProps) => 
               icon={
                 <IconifyIcon
                   icon={tab.icon}
-                  sx={{ fontSize: 24, color: 'primary.dark', flexShrink: 0 }}
+                  sx={{ fontSize: 24, color: 'inherit', flexShrink: 0 }}
                 />
               }
               label={

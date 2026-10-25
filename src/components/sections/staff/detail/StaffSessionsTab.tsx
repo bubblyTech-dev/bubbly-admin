@@ -16,6 +16,7 @@ import { formatDateTime } from 'lib/format';
 import { staffService } from 'services/staffService';
 import { StaffSession, StaffUser } from 'types/staff';
 import ConfirmDialog from 'components/common/ConfirmDialog';
+import TableEmptyRow from 'components/common/TableEmptyRow';
 import PageLoader from 'components/loading/PageLoader';
 
 // The devices a staff member is signed in on. Ending a session signs that device out at once.
@@ -110,11 +111,7 @@ const StaffSessionsTab = ({ staff }: { staff: StaffUser }) => {
               </TableRow>
             ))}
             {sessions.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={5} align="center" sx={{ py: 6, color: 'text.secondary' }}>
-                  Not signed in anywhere.
-                </TableCell>
-              </TableRow>
+              <TableEmptyRow colSpan={5} message="Not signed in anywhere." />
             )}
           </TableBody>
         </Table>

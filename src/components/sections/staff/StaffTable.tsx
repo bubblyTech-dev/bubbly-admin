@@ -4,10 +4,6 @@ import {
   Alert,
   Avatar,
   Box,
-  IconButton,
-  InputAdornment,
-  Menu,
-  MenuItem,
   Stack,
   Table,
   TableBody,
@@ -15,7 +11,6 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  TextField,
   Typography,
 } from '@mui/material';
 import useDebouncedValue from 'hooks/useDebouncedValue';
@@ -25,8 +20,11 @@ import { useAuth } from 'providers/AuthProvider';
 import { userPath } from 'routes/paths';
 import { staffService } from 'services/staffService';
 import { PaginationMeta, StaffUser } from 'types/staff';
-import IconifyIcon from 'components/base/IconifyIcon';
 import ConfirmDialog from 'components/common/ConfirmDialog';
+import FilterSelect from 'components/common/FilterSelect';
+import RowActionsCell from 'components/common/RowActionsCell';
+import SearchField from 'components/common/SearchField';
+import TableEmptyRow from 'components/common/TableEmptyRow';
 import TablePager from 'components/common/TablePager';
 import StaffFormDialog from './StaffFormDialog';
 import StaffStatusChip from './StaffStatusChip';
@@ -51,7 +49,6 @@ const StaffTable = ({ refreshKey, onChanged }: StaffTableProps) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const [menu, setMenu] = useState<{ anchor: HTMLElement; staff: StaffUser } | null>(null);
   const [editing, setEditing] = useState<StaffUser | null>(null);
   const [confirm, setConfirm] = useState<{
     kind: 'delete' | 'deactivate';
@@ -89,10 +86,7 @@ const StaffTable = ({ refreshKey, onChanged }: StaffTableProps) => {
     setPage(0);
   }, [debouncedSearch, status]);
 
-  const closeMenu = () => setMenu(null);
-
   const activate = async (staff: StaffUser) => {
-    closeMenu();
     setError('');
     try {
       await staffService.setStatus(staff.uuid, 1);
@@ -124,35 +118,21 @@ const StaffTable = ({ refreshKey, onChanged }: StaffTableProps) => {
   return (
     <Stack direction="column" spacing={3}>
       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-        <TextField
-          size="small"
-          placeholder="Search name, email or phone"
+        <SearchField
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          sx={{ minWidth: { sm: 320 } }}
-          slotProps={{
-            input: {
-              startAdornment: (
-                <InputAdornment position="start">
-                  <IconifyIcon icon="material-symbols:search-rounded" />
-                </InputAdornment>
-              ),
-            },
-          }}
+          placeholder="Search name, email or phone"
+          onChange={setSearch}
         />
-        <TextField
-          select
-          size="small"
+        <FilterSelect
           label="Status"
           value={status}
-          onChange={(e) => setStatus(e.target.value === '' ? '' : Number(e.target.value))}
-          sx={{ minWidth: 160 }}
-        >
-          <MenuItem value="">All</MenuItem>
-          <MenuItem value={1}>Active</MenuItem>
-          <MenuItem value={2}>Inactive</MenuItem>
-          <MenuItem value={3}>Locked</MenuItem>
-        </TextField>
+          options={[
+            { value: 1, label: 'Active' },
+            { value: 2, label: 'Inactive' },
+            { value: 3, label: 'Locked' },
+          ]}
+          onChange={(value) => setStatus(value === '' ? '' : Number(value))}
+        />
       </Stack>
 
       {error && <Alert severity="error">{error}</Alert>}
@@ -198,22 +178,38 @@ const StaffTable = ({ refreshKey, onChanged }: StaffTableProps) => {
                 </TableCell>
                 <TableCell>{formatDateTime(staff.lastLoginAt)}</TableCell>
                 <TableCell>{formatDateTime(staff.createdAt)}</TableCell>
-                <TableCell align="right" onClick={(e) => e.stopPropagation()}>
-                  <IconButton
-                    aria-label="Actions"
-                    onClick={(e) => setMenu({ anchor: e.currentTarget, staff })}
-                  >
-                    <IconifyIcon icon="material-symbols:more-vert" />
-                  </IconButton>
-                </TableCell>
+                <RowActionsCell
+                  actions={[
+                    { label: 'View', onClick: () => navigate(userPath(staff.uuid)) },
+                    { label: 'Edit', visible: canEdit, onClick: () => setEditing(staff) },
+                    {
+                      label: 'Deactivate',
+                      visible: canStatus && staff.status === 1,
+                      onClick: () => {
+                        setActionError('');
+                        setConfirm({ kind: 'deactivate', staff });
+                      },
+                    },
+                    {
+                      label: 'Activate',
+                      visible: canStatus && staff.status !== 1,
+                      onClick: () => void activate(staff),
+                    },
+                    {
+                      label: 'Delete',
+                      danger: true,
+                      visible: canDelete,
+                      onClick: () => {
+                        setActionError('');
+                        setConfirm({ kind: 'delete', staff });
+                      },
+                    },
+                  ]}
+                />
               </TableRow>
             ))}
             {!loading && rows.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={6} align="center" sx={{ py: 6, color: 'text.secondary' }}>
-                  No staff members found.
-                </TableCell>
-              </TableRow>
+              <TableEmptyRow colSpan={6} message="No staff members found." />
             )}
           </TableBody>
         </Table>
@@ -225,52 +221,6 @@ const StaffTable = ({ refreshKey, onChanged }: StaffTableProps) => {
         total={meta?.total ?? 0}
         onChange={(next) => setPage(next - 1)}
       />
-
-      <Menu anchorEl={menu?.anchor} open={Boolean(menu)} onClose={closeMenu}>
-        <MenuItem
-          onClick={() => {
-            if (menu) navigate(userPath(menu.staff.uuid));
-          }}
-        >
-          View
-        </MenuItem>
-        {canEdit && (
-          <MenuItem
-            onClick={() => {
-              setEditing(menu?.staff ?? null);
-              closeMenu();
-            }}
-          >
-            Edit
-          </MenuItem>
-        )}
-        {canStatus && menu?.staff.status === 1 && (
-          <MenuItem
-            onClick={() => {
-              setActionError('');
-              setConfirm(menu ? { kind: 'deactivate', staff: menu.staff } : null);
-              closeMenu();
-            }}
-          >
-            Deactivate
-          </MenuItem>
-        )}
-        {canStatus && menu && menu.staff.status !== 1 && (
-          <MenuItem onClick={() => void activate(menu.staff)}>Activate</MenuItem>
-        )}
-        {canDelete && (
-          <MenuItem
-            sx={{ color: 'error.main' }}
-            onClick={() => {
-              setActionError('');
-              setConfirm(menu ? { kind: 'delete', staff: menu.staff } : null);
-              closeMenu();
-            }}
-          >
-            Delete
-          </MenuItem>
-        )}
-      </Menu>
 
       <StaffFormDialog
         open={Boolean(editing)}

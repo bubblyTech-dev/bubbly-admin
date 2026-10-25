@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react';
 import {
   Alert,
-  InputAdornment,
-  MenuItem,
   Stack,
   Table,
   TableBody,
@@ -17,7 +15,10 @@ import { parseApiError } from 'lib/api';
 import { formatDateTime } from 'lib/format';
 import { auditService } from 'services/auditService';
 import { AuditLogEntry, PaginationMeta } from 'types/staff';
-import IconifyIcon from 'components/base/IconifyIcon';
+import FilterSelect from 'components/common/FilterSelect';
+import RowActionsCell from 'components/common/RowActionsCell';
+import SearchField from 'components/common/SearchField';
+import TableEmptyRow from 'components/common/TableEmptyRow';
 import TablePager from 'components/common/TablePager';
 import AuditLogDetailDialog from './AuditLogDetailDialog';
 import { auditActionOptions, auditEntityOptions } from './auditOptions';
@@ -67,50 +68,21 @@ const AuditLogTable = () => {
   return (
     <Stack direction="column" spacing={3}>
       <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ flexWrap: 'wrap', gap: 2 }}>
-        <TextField
-          size="small"
-          placeholder="Search who or what"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          sx={{ minWidth: { md: 260 } }}
-          slotProps={{
-            input: {
-              startAdornment: (
-                <InputAdornment position="start">
-                  <IconifyIcon icon="material-symbols:search-rounded" />
-                </InputAdornment>
-              ),
-            },
-          }}
-        />
-        <TextField
-          select
-          size="small"
+        <SearchField value={search} placeholder="Search who or what" onChange={setSearch} />
+        <FilterSelect
           label="Action"
           value={action}
-          onChange={(e) => setAction(e.target.value)}
-          sx={{ minWidth: 220 }}
-        >
-          {auditActionOptions.map((option) => (
-            <MenuItem key={option.value} value={option.value}>
-              {option.label}
-            </MenuItem>
-          ))}
-        </TextField>
-        <TextField
-          select
-          size="small"
+          allLabel={auditActionOptions.find((option) => option.value === '')?.label}
+          options={auditActionOptions.filter((option) => option.value !== '')}
+          onChange={setAction}
+        />
+        <FilterSelect
           label="Record"
           value={entityType}
-          onChange={(e) => setEntityType(e.target.value)}
-          sx={{ minWidth: 160 }}
-        >
-          {auditEntityOptions.map((option) => (
-            <MenuItem key={option.value} value={option.value}>
-              {option.label}
-            </MenuItem>
-          ))}
-        </TextField>
+          allLabel={auditEntityOptions.find((option) => option.value === '')?.label}
+          options={auditEntityOptions.filter((option) => option.value !== '')}
+          onChange={setEntityType}
+        />
         <TextField
           size="small"
           type="date"
@@ -139,6 +111,7 @@ const AuditLogTable = () => {
               <TableCell>Who</TableCell>
               <TableCell>What happened</TableCell>
               <TableCell>IP address</TableCell>
+              <TableCell align="right" />
             </TableRow>
           </TableHead>
           <TableBody sx={{ opacity: loading ? 0.5 : 1 }}>
@@ -155,14 +128,13 @@ const AuditLogTable = () => {
                 <TableCell>{entry.actorName || '-'}</TableCell>
                 <TableCell>{entry.description || entry.action}</TableCell>
                 <TableCell>{entry.ipAddress || '-'}</TableCell>
+                <RowActionsCell
+                  actions={[{ label: 'View details', onClick: () => setSelected(entry) }]}
+                />
               </TableRow>
             ))}
             {!loading && rows.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={4} align="center" sx={{ py: 6, color: 'text.secondary' }}>
-                  Nothing recorded for these filters.
-                </TableCell>
-              </TableRow>
+              <TableEmptyRow colSpan={5} message="Nothing recorded for these filters." />
             )}
           </TableBody>
         </Table>

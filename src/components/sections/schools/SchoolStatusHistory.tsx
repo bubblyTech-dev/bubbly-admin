@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import {
   Alert,
-  Pagination,
   Stack,
   Table,
   TableBody,
@@ -15,6 +14,8 @@ import dayjs from 'dayjs';
 import { parseApiError } from 'lib/api';
 import { schoolService } from 'services/schoolService';
 import { PageMeta, SchoolStatusHistoryItem } from 'types/school';
+import TableEmptyRow from 'components/common/TableEmptyRow';
+import TablePager from 'components/common/TablePager';
 import PageLoader from 'components/loading/PageLoader';
 import SchoolStatusChip from './SchoolStatusChip';
 
@@ -92,28 +93,15 @@ const SchoolStatusHistory = ({
                 </TableRow>
               ))}
               {items.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={4}>
-                    <Typography
-                      variant="body2"
-                      sx={{ color: 'text.secondary', py: 2, textAlign: 'center' }}
-                    >
-                      The status has not been changed yet.
-                    </Typography>
-                  </TableCell>
-                </TableRow>
+                <TableEmptyRow colSpan={4} message="The status has not been changed yet." />
               )}
             </TableBody>
           </Table>
         </TableContainer>
       )}
 
-      {meta && meta.lastPage > 1 && (
-        <Pagination
-          count={meta.lastPage}
-          page={meta.page}
-          onChange={(_event, value) => setPage(value)}
-        />
+      {meta && (
+        <TablePager page={meta.page} perPage={meta.perPage} total={meta.total} onChange={setPage} />
       )}
     </Stack>
   );

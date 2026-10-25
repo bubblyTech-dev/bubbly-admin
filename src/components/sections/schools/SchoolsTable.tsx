@@ -1,14 +1,9 @@
-import { ChangeEvent, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import {
   Alert,
   Avatar,
   Box,
-  Button,
-  IconButton,
-  InputAdornment,
-  MenuItem,
-  Pagination,
   Stack,
   Table,
   TableBody,
@@ -16,45 +11,37 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  TextField,
   Typography,
 } from '@mui/material';
-import dayjs from 'dayjs';
+import useDebouncedValue from 'hooks/useDebouncedValue';
 import { parseApiError } from 'lib/api';
-import { useAuth } from 'providers/AuthProvider';
-import paths, { schoolPath } from 'routes/paths';
+import { formatDate } from 'lib/format';
+import { schoolPath } from 'routes/paths';
 import { schoolService } from 'services/schoolService';
 import { PageMeta, School, SchoolStatus } from 'types/school';
-import IconifyIcon from 'components/base/IconifyIcon';
-import PageLoader from 'components/loading/PageLoader';
+import FilterSelect from 'components/common/FilterSelect';
+import RowActionsCell from 'components/common/RowActionsCell';
+import SearchField from 'components/common/SearchField';
+import TableEmptyRow from 'components/common/TableEmptyRow';
+import TablePager from 'components/common/TablePager';
 import SchoolStatusChip from './SchoolStatusChip';
 import { schoolStatusLabel } from './schoolStatus';
 
-const PER_PAGE_OPTIONS = [10, 25, 50];
+const PER_PAGE = 15;
 
 const SchoolsTable = () => {
   const navigate = useNavigate();
-  const { hasPermission } = useAuth();
 
   const [search, setSearch] = useState('');
-  const [query, setQuery] = useState('');
   const [status, setStatus] = useState<SchoolStatus | ''>('');
   const [page, setPage] = useState(1);
-  const [perPage, setPerPage] = useState(PER_PAGE_OPTIONS[0]);
 
   const [schools, setSchools] = useState<School[]>([]);
   const [meta, setMeta] = useState<PageMeta | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // wait until the person stops typing before asking the server
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setQuery(search.trim());
-      setPage(1);
-    }, 400);
-    return () => clearTimeout(timer);
-  }, [search]);
+  const debouncedSearch = useDebouncedValue(search);
 
   useEffect(() => {
     let active = true;
@@ -63,10 +50,10 @@ const SchoolsTable = () => {
 
     schoolService
       .list({
-        search: query || undefined,
+        search: debouncedSearch.trim() || undefined,
         status: status || undefined,
         page,
-        perPage,
+        perPage: PER_PAGE,
       })
       .then((result) => {
         if (!active) return;
@@ -83,74 +70,36 @@ const SchoolsTable = () => {
     return () => {
       active = false;
     };
-  }, [query, status, page, perPage]);
+  }, [debouncedSearch, status, page]);
 
-  const handleStatus = (e: ChangeEvent<HTMLInputElement>) => {
-    setStatus(e.target.value === '' ? '' : (Number(e.target.value) as SchoolStatus));
+  // a new search or filter starts again from the first page
+  useEffect(() => {
     setPage(1);
-  };
+  }, [debouncedSearch, status]);
 
   return (
     <Stack direction="column" spacing={3}>
-      <Stack
-        direction={{ xs: 'column', sm: 'row' }}
-        spacing={2}
-        sx={{ justifyContent: 'space-between', alignItems: { sm: 'center' } }}
-      >
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ flex: 1 }}>
-          <TextField
-            id="school-search"
-            type="search"
-            placeholder="Search by name, contact, email or phone"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            sx={{ maxWidth: { sm: 340 }, width: 1 }}
-            slotProps={{
-              input: {
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <IconifyIcon
-                      icon="material-symbols:search-rounded"
-                      sx={{ fontSize: 20, color: 'text.secondary' }}
-                    />
-                  </InputAdornment>
-                ),
-              },
-            }}
-          />
-          <TextField
-            select
-            id="school-status-filter"
-            label="Status"
-            value={status}
-            onChange={handleStatus}
-            sx={{ minWidth: 160 }}
-          >
-            <MenuItem value="">All statuses</MenuItem>
-            {(Object.keys(schoolStatusLabel) as unknown as SchoolStatus[]).map((value) => (
-              <MenuItem key={value} value={value}>
-                {schoolStatusLabel[value]}
-              </MenuItem>
-            ))}
-          </TextField>
-        </Stack>
-
-        {hasPermission('schools.create') && (
-          <Button
-            variant="contained"
-            startIcon={<IconifyIcon icon="material-symbols:add-rounded" />}
-            onClick={() => navigate(paths.schoolNew)}
-            sx={{ flexShrink: 0 }}
-          >
-            Add school
-          </Button>
-        )}
+      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+        <SearchField
+          value={search}
+          placeholder="Search name, contact, email or phone"
+          onChange={setSearch}
+        />
+        <FilterSelect
+          label="Status"
+          value={status}
+          options={(Object.keys(schoolStatusLabel) as unknown as SchoolStatus[]).map((value) => ({
+            value,
+            label: schoolStatusLabel[value],
+          }))}
+          onChange={(value) => setStatus(value === '' ? '' : (Number(value) as SchoolStatus))}
+        />
       </Stack>
 
       {error && <Alert severity="error">{error}</Alert>}
 
       <TableContainer>
-        <Table>
+        <Table sx={{ minWidth: 720 }}>
           <TableHead>
             <TableRow>
               <TableCell>School</TableCell>
@@ -161,7 +110,7 @@ const SchoolsTable = () => {
               <TableCell align="right" />
             </TableRow>
           </TableHead>
-          <TableBody>
+          <TableBody sx={{ opacity: loading ? 0.5 : 1 }}>
             {schools.map((school) => (
               <TableRow
                 key={school.uuid}
@@ -170,14 +119,16 @@ const SchoolsTable = () => {
                 sx={{ cursor: 'pointer' }}
               >
                 <TableCell>
-                  <Stack spacing={1.5} sx={{ alignItems: 'center' }}>
-                    <Avatar src={school.logo ?? undefined} alt={school.name} variant="rounded">
+                  <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }}>
+                    <Avatar
+                      src={school.logo ?? undefined}
+                      alt={school.name}
+                      sx={{ width: 36, height: 36 }}
+                    >
                       {school.name.charAt(0).toUpperCase()}
                     </Avatar>
                     <Box>
-                      <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-                        {school.name}
-                      </Typography>
+                      <Typography variant="subtitle2">{school.name}</Typography>
                       <Typography variant="caption" sx={{ color: 'text.secondary' }}>
                         {school.slug}
                       </Typography>
@@ -194,76 +145,20 @@ const SchoolsTable = () => {
                 <TableCell>
                   <SchoolStatusChip status={school.status} />
                 </TableCell>
-                <TableCell>{dayjs(school.createdAt).format('DD MMM YYYY')}</TableCell>
-                <TableCell align="right">
-                  <IconButton
-                    size="small"
-                    aria-label="Open school"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigate(schoolPath(school.uuid));
-                    }}
-                  >
-                    <IconifyIcon icon="material-symbols:edit-outline-rounded" />
-                  </IconButton>
-                </TableCell>
+                <TableCell>{formatDate(school.createdAt)}</TableCell>
+                <RowActionsCell
+                  actions={[{ label: 'View', onClick: () => navigate(schoolPath(school.uuid)) }]}
+                />
               </TableRow>
             ))}
-
             {!loading && schools.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={6}>
-                  <Typography
-                    variant="body2"
-                    sx={{ color: 'text.secondary', py: 3, textAlign: 'center' }}
-                  >
-                    No schools found.
-                  </Typography>
-                </TableCell>
-              </TableRow>
+              <TableEmptyRow colSpan={6} message="No schools found." />
             )}
           </TableBody>
         </Table>
-        {loading && <PageLoader sx={{ py: 6 }} />}
       </TableContainer>
 
-      <Stack
-        direction={{ xs: 'column', sm: 'row' }}
-        spacing={2}
-        sx={{ justifyContent: 'space-between', alignItems: { sm: 'center' } }}
-      >
-        <Stack spacing={2} sx={{ alignItems: 'center' }}>
-          <TextField
-            select
-            size="small"
-            id="school-per-page"
-            label="Rows"
-            value={perPage}
-            onChange={(e) => {
-              setPerPage(Number(e.target.value));
-              setPage(1);
-            }}
-            sx={{ minWidth: 90 }}
-          >
-            {PER_PAGE_OPTIONS.map((option) => (
-              <MenuItem key={option} value={option}>
-                {option}
-              </MenuItem>
-            ))}
-          </TextField>
-          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-            {meta?.total ?? 0} {meta?.total === 1 ? 'school' : 'schools'}
-          </Typography>
-        </Stack>
-
-        {meta && meta.lastPage > 1 && (
-          <Pagination
-            count={meta.lastPage}
-            page={meta.page}
-            onChange={(_event, value) => setPage(value)}
-          />
-        )}
-      </Stack>
+      <TablePager page={page} perPage={PER_PAGE} total={meta?.total ?? 0} onChange={setPage} />
     </Stack>
   );
 };

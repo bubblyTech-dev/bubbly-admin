@@ -4,9 +4,6 @@ import {
   Alert,
   Box,
   Button,
-  IconButton,
-  InputAdornment,
-  MenuItem,
   Paper,
   Stack,
   Table,
@@ -15,10 +12,10 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  TextField,
   Tooltip,
   Typography,
 } from '@mui/material';
+import useDebouncedValue from 'hooks/useDebouncedValue';
 import { parseApiError } from 'lib/api';
 import { formatRupees, intervalLabel } from 'lib/money';
 import { useAuth } from 'providers/AuthProvider';
@@ -27,7 +24,11 @@ import { planService } from 'services/planService';
 import { PageMeta, Plan } from 'types/plans';
 import IconifyIcon from 'components/base/IconifyIcon';
 import ConfirmDialog from 'components/common/ConfirmDialog';
+import FilterSelect from 'components/common/FilterSelect';
 import PageHeader from 'components/common/PageHeader';
+import RowActionsCell from 'components/common/RowActionsCell';
+import SearchField from 'components/common/SearchField';
+import TableEmptyRow from 'components/common/TableEmptyRow';
 import TablePager from 'components/common/TablePager';
 import PlanStatusChip from 'components/sections/plans/PlanStatusChip';
 
@@ -59,7 +60,6 @@ const PlanList = () => {
   const [plans, setPlans] = useState<Plan[]>([]);
   const [meta, setMeta] = useState<PageMeta>({ page: 1, perPage: 15, total: 0, lastPage: 1 });
   const [search, setSearch] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [status, setStatus] = useState('');
   const [page, setPage] = useState(1);
   const perPage = 15;
@@ -69,14 +69,12 @@ const PlanList = () => {
   const [pending, setPending] = useState<PendingAction>(null);
   const [working, setWorking] = useState(false);
 
-  // wait a moment after typing before asking the server
+  const debouncedSearch = useDebouncedValue(search);
+
+  // a new search or filter starts again from the first page
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(search);
-      setPage(1);
-    }, 400);
-    return () => clearTimeout(timer);
-  }, [search]);
+    setPage(1);
+  }, [debouncedSearch, status]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -168,67 +166,43 @@ const PlanList = () => {
           )}
 
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-            <TextField
-              placeholder="Search plans"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              sx={{ minWidth: { sm: 280 } }}
-              slotProps={{
-                input: {
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <IconifyIcon icon="material-symbols:search-rounded" />
-                    </InputAdornment>
-                  ),
-                },
-              }}
-            />
-            <TextField
-              select
+            <SearchField value={search} placeholder="Search plans" onChange={setSearch} />
+            <FilterSelect
               label="Status"
               value={status}
-              onChange={(e) => {
-                setStatus(e.target.value);
-                setPage(1);
-              }}
-              sx={{ minWidth: 180 }}
-            >
-              <MenuItem value="">All</MenuItem>
-              <MenuItem value="1">Draft</MenuItem>
-              <MenuItem value="2">Published</MenuItem>
-              <MenuItem value="3">Archived</MenuItem>
-            </TextField>
+              options={[
+                { value: '1', label: 'Draft' },
+                { value: '2', label: 'Published' },
+                { value: '3', label: 'Archived' },
+              ]}
+              onChange={setStatus}
+            />
           </Stack>
 
           <TableContainer>
-            <Table>
+            <Table sx={{ minWidth: 720 }}>
               <TableHead>
                 <TableRow>
                   <TableCell>Plan</TableCell>
                   <TableCell>Price</TableCell>
                   <TableCell>Modules</TableCell>
                   <TableCell>Status</TableCell>
-                  <TableCell align="right">Actions</TableCell>
+                  <TableCell align="right" />
                 </TableRow>
               </TableHead>
-              <TableBody>
+              <TableBody sx={{ opacity: loading ? 0.5 : 1 }}>
                 {plans.map((plan) => (
-                  <TableRow key={plan.uuid} hover>
+                  <TableRow
+                    key={plan.uuid}
+                    hover
+                    onClick={() => navigate(`${paths.plans}/${plan.uuid}`)}
+                    sx={{ cursor: 'pointer' }}
+                  >
                     <TableCell>
                       <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
                         <Box>
-                          <Typography
-                            component={RouterLink}
-                            to={`${paths.plans}/${plan.uuid}`}
-                            variant="subtitle2"
-                            sx={{ color: 'text.primary', textDecoration: 'none', fontWeight: 700 }}
-                          >
-                            {plan.name}
-                          </Typography>
-                          <Typography
-                            variant="caption"
-                            sx={{ display: 'block', color: 'text.secondary' }}
-                          >
+                          <Typography variant="subtitle2">{plan.name}</Typography>
+                          <Typography variant="caption" sx={{ color: 'text.secondary' }}>
                             {plan.slug} · v{plan.version}
                           </Typography>
                         </Box>
@@ -249,53 +223,40 @@ const PlanList = () => {
                     <TableCell>
                       <PlanStatusChip status={plan.status} />
                     </TableCell>
-                    <TableCell align="right">
-                      <Stack direction="row" spacing={0.5} sx={{ justifyContent: 'flex-end' }}>
-                        {canEdit && plan.status !== 3 && (
-                          <ActionIcon
-                            label="Edit"
-                            icon="material-symbols:edit-outline-rounded"
-                            onClick={() => navigate(`${paths.plans}/${plan.uuid}`)}
-                          />
-                        )}
-                        {canPublish && plan.status === 1 && (
-                          <ActionIcon
-                            label="Publish"
-                            icon="material-symbols:check-circle-outline-rounded"
-                            onClick={() => setPending({ type: 'publish', plan })}
-                          />
-                        )}
-                        {canCreate && (
-                          <ActionIcon
-                            label="Duplicate"
-                            icon="material-symbols:content-copy-outline-rounded"
-                            onClick={() => void handleDuplicate(plan)}
-                          />
-                        )}
-                        {canArchive && plan.status !== 3 && (
-                          <ActionIcon
-                            label="Archive"
-                            icon="material-symbols:archive-outline-rounded"
-                            onClick={() => setPending({ type: 'archive', plan })}
-                          />
-                        )}
-                        {canArchive && plan.status === 1 && (
-                          <ActionIcon
-                            label="Delete"
-                            icon="material-symbols:delete-outline-rounded"
-                            onClick={() => setPending({ type: 'delete', plan })}
-                          />
-                        )}
-                      </Stack>
-                    </TableCell>
+                    <RowActionsCell
+                      actions={[
+                        {
+                          label: plan.status === 3 ? 'View' : 'Edit',
+                          visible: plan.status === 3 || canEdit,
+                          onClick: () => navigate(`${paths.plans}/${plan.uuid}`),
+                        },
+                        {
+                          label: 'Publish',
+                          visible: canPublish && plan.status === 1,
+                          onClick: () => setPending({ type: 'publish', plan }),
+                        },
+                        {
+                          label: 'Duplicate',
+                          visible: canCreate,
+                          onClick: () => void handleDuplicate(plan),
+                        },
+                        {
+                          label: 'Archive',
+                          visible: canArchive && plan.status !== 3,
+                          onClick: () => setPending({ type: 'archive', plan }),
+                        },
+                        {
+                          label: 'Delete',
+                          danger: true,
+                          visible: canArchive && plan.status === 1,
+                          onClick: () => setPending({ type: 'delete', plan }),
+                        },
+                      ]}
+                    />
                   </TableRow>
                 ))}
                 {!loading && plans.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={5} align="center" sx={{ py: 6, color: 'text.secondary' }}>
-                      No plans found.
-                    </TableCell>
-                  </TableRow>
+                  <TableEmptyRow colSpan={5} message="No plans found." />
                 )}
               </TableBody>
             </Table>
@@ -323,19 +284,5 @@ const PlanList = () => {
     </Stack>
   );
 };
-
-interface ActionIconProps {
-  label: string;
-  icon: string;
-  onClick: () => void;
-}
-
-const ActionIcon = ({ label, icon, onClick }: ActionIconProps) => (
-  <Tooltip title={label}>
-    <IconButton size="small" aria-label={label} onClick={onClick}>
-      <IconifyIcon icon={icon} sx={{ fontSize: 20 }} />
-    </IconButton>
-  </Tooltip>
-);
 
 export default PlanList;
