@@ -13,6 +13,9 @@ const UserList = lazy(() => import('pages/users/UserList'));
 const UserDetail = lazy(() => import('pages/users/UserDetail'));
 const AuditLogs = lazy(() => import('pages/audit/AuditLogs'));
 const Starter = lazy(() => import('pages/others/Starter'));
+const PlanList = lazy(() => import('pages/plans/PlanList'));
+const PlanForm = lazy(() => import('pages/plans/PlanForm'));
+const ModuleList = lazy(() => import('pages/modules/ModuleList'));
 const Account = lazy(() => import('pages/others/Account'));
 
 const Login = lazy(() => import('pages/authentication/Login'));
@@ -60,6 +63,10 @@ export const routes: RouteObject[] = [
               },
               { path: paths.account, element: <Account /> },
               { path: paths.starter, element: <Starter /> },
+              { path: paths.plans, element: <PlanList /> },
+              { path: paths.plansNew, element: <PlanForm /> },
+              { path: `${paths.plans}/:uuid`, element: <PlanForm /> },
+              { path: paths.modules, element: <ModuleList /> },
             ],
           },
         ],

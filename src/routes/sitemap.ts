@@ -12,6 +12,7 @@ export interface SubMenuItem {
   active?: boolean;
   /** permission key an admin needs to see this item (the master always sees it) */
   permission?: string;
+  permission?: string; // the admin permission that shows this item (used by the sidebar)
   icon?: string;
   iconSx?: SxProps;
   items?: SubMenuItem[];
@@ -54,6 +55,22 @@ const sitemap: MenuItem[] = [
         icon: 'material-symbols:history-rounded',
         active: true,
         permission: 'audit.view',
+      },
+      {
+        name: 'Plans',
+        path: paths.plans,
+        pathName: 'plans',
+        icon: 'material-symbols:sell-outline',
+        permission: 'plans.view',
+        active: true,
+      },
+      {
+        name: 'Modules',
+        path: paths.modules,
+        pathName: 'modules',
+        icon: 'material-symbols:widgets-outline-rounded',
+        permission: 'modules.view',
+        active: true,
       },
       {
         name: 'Starter',

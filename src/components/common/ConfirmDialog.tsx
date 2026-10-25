@@ -22,6 +22,7 @@ interface ConfirmDialogProps {
 }
 
 // A yes/no question before something that cannot be undone easily.
+// A simple "are you sure?" box.
 const ConfirmDialog = ({
   open,
   title,
