@@ -10,6 +10,8 @@ export interface SubMenuItem {
   path?: string;
   target?: HTMLAttributeAnchorTarget;
   active?: boolean;
+  permission?: string; // the admin needs this permission to see the item
+  badge?: 'inquiries'; // small counter shown next to the name
   icon?: string;
   iconSx?: SxProps;
   items?: SubMenuItem[];
@@ -42,6 +44,15 @@ const sitemap: MenuItem[] = [
         path: paths.users,
         pathName: 'users',
         icon: 'material-symbols:account-box-outline',
+        active: true,
+      },
+      {
+        name: 'Inquiries',
+        path: paths.inquiries,
+        pathName: 'inquiries',
+        icon: 'material-symbols:inbox-outline-rounded',
+        permission: 'inquiries.view',
+        badge: 'inquiries',
         active: true,
       },
       {

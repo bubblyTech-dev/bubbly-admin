@@ -6,6 +6,7 @@ const paths = {
   root: rootPaths.root,
   starter: `/starter`,
   users: `/users`,
+  inquiries: `/inquiries`,
   account: `/account`,
   login: `/login`,
   forgotPassword: `/forgot-password`,

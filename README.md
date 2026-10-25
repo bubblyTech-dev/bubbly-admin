@@ -104,3 +104,6 @@ Removed or replaced so nothing depends on the template author's services or paid
 This project is proprietary. It includes code from the **Aurora Free** template (MIT, Copyright (c) 2025 ThemeWagon). Keep [LICENSE.md](LICENSE.md) in the repository; it is the notice the MIT license requires.
 
 Other libraries (React, MUI, Emotion, ECharts, Iconify and others) are open source under their own licenses; see `package-lock.json`. Flag graphics used by the demo dashboard are **Twemoji**, Copyright 2020 Twitter, Inc and other contributors, licensed under [CC-BY 4.0](https://creativecommons.org/licenses/by/4.0/). Remove the flags together with the demo data, or keep this credit.
+
+## Inquiries (support inbox)
+`/inquiries` lists messages from the public contact, demo and pricing forms: status chips with counts, search, source filter and "assigned to me". Clicking a row opens a drawer with the message, status, assignee, internal notes and delete (Resolved or Spam only). The sidebar item shows the number of New inquiries and needs `inquiries.view`; changing things needs `inquiries.manage`. Code: `pages/inquiries`, `components/sections/inquiries`, `services/inquiryService.ts`, `types/inquiries.ts`.
