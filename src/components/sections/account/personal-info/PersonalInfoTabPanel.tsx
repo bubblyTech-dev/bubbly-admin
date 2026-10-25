@@ -1,36 +1,32 @@
 import { Divider, Stack } from '@mui/material';
 import AccountTabPanelSection from '../common/AccountTabPanelSection';
-import Address from './Address';
 import Email from './Email';
 import Names from './Names';
 import Phone from './Phone';
-import UserName from './UserName';
+import ProfilePhoto from './ProfilePhoto';
 
 const PersonalInfoTabPanel = () => {
   return (
     <Stack direction="column" divider={<Divider />} spacing={5}>
       <AccountTabPanelSection
-        title="Name"
-        subtitle="Edit your name here if you wish to make any changes. You can also edit your user name which will be showed publicly."
-        icon="material-symbols:badge-outline"
+        title="Profile Photo"
+        subtitle="Add a photo so your team can recognise you."
+        icon="material-symbols:imagesmode-outline"
       >
-        <Stack direction="column" spacing={1}>
-          <Names />
-          <UserName />
-        </Stack>
+        <ProfilePhoto />
       </AccountTabPanelSection>
 
       <AccountTabPanelSection
-        title="Address"
-        subtitle="You can edit your address and control who can see it."
-        icon="material-symbols:location-on-outline"
+        title="Name"
+        subtitle="Edit your name here if you wish to make any changes."
+        icon="material-symbols:badge-outline"
       >
-        <Address />
+        <Names />
       </AccountTabPanelSection>
 
       <AccountTabPanelSection
         title="Phone"
-        subtitle="Add a personal or official phone number to stay connected with ease and ensure account recovery options are available."
+        subtitle="Add a personal or official phone number so your team can reach you."
         icon="material-symbols:call-outline"
       >
         <Phone />
@@ -38,7 +34,7 @@ const PersonalInfoTabPanel = () => {
 
       <AccountTabPanelSection
         title="Email Address"
-        subtitle="Edit your primary email address for notifications and add an alternate email address for extra security and communication flexibility."
+        subtitle="This is the email you log in with."
         icon="material-symbols:mail-outline"
       >
         <Email />

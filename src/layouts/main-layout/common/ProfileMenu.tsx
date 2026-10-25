@@ -15,6 +15,7 @@ import {
   paperClasses,
 } from '@mui/material';
 import Menu from '@mui/material/Menu';
+import { useAuth } from 'providers/AuthProvider';
 import paths from 'routes/paths';
 import IconifyIcon from 'components/base/IconifyIcon';
 import StatusAvatar from 'components/base/StatusAvatar';
@@ -26,6 +27,8 @@ interface ProfileMenuItemProps extends MenuItemProps {
 }
 
 const ProfileMenu = () => {
+  const { user, logout } = useAuth();
+  const displayName = user?.name || user?.email || 'Admin';
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   const open = Boolean(anchorEl);
@@ -44,9 +47,9 @@ const ProfileMenu = () => {
       }}
     >
       <StatusAvatar
-        alt={demoUser.name}
+        alt={displayName}
         status="online"
-        src={demoUser.avatar ?? undefined}
+        src={user?.profileImage ?? undefined}
         sx={{
           width: 40,
           height: 40,
@@ -87,8 +90,8 @@ const ProfileMenu = () => {
         >
           <StatusAvatar
             status="online"
-            alt={demoUser.name}
-            src={demoUser.avatar ?? undefined}
+            alt={displayName}
+            src={user?.profileImage ?? undefined}
             sx={{ width: 48, height: 48 }}
           />
           <Box>
@@ -99,63 +102,34 @@ const ProfileMenu = () => {
                 mb: 0.5,
               }}
             >
-              {demoUser.name}
+              {displayName}
             </Typography>
-            {demoUser.designation && (
-              <Typography
-                variant="subtitle2"
-                sx={{
-                  color: 'warning.main',
-                }}
-              >
-                {demoUser.designation}
-                <IconifyIcon
-                  icon="material-symbols:diamond-rounded"
-                  color="warning.main"
-                  sx={{ verticalAlign: 'text-bottom', ml: 0.5 }}
-                />
-              </Typography>
-            )}
+            <Typography variant="subtitle2" sx={{ color: 'text.secondary' }}>
+              {user?.isMaster ? 'Master admin' : user?.email}
+            </Typography>
           </Box>
         </Stack>
-        <Divider />
-        <Box sx={{ py: 1 }}>
-          <ProfileMenuItem icon="material-symbols:accessible-forward-rounded" onClick={handleClose}>
-            Accessibility
-          </ProfileMenuItem>
-
-          <ProfileMenuItem icon="material-symbols:settings-outline-rounded" onClick={handleClose}>
-            Preferences
-          </ProfileMenuItem>
-        </Box>
         <Divider />
         <Box sx={{ py: 1 }}>
           <ProfileMenuItem
             icon="material-symbols:manage-accounts-outline-rounded"
             onClick={handleClose}
-            href="#!"
+            href={paths.account}
           >
             Account Settings
-          </ProfileMenuItem>
-          <ProfileMenuItem
-            icon="material-symbols:question-mark-rounded"
-            onClick={handleClose}
-            href="#!"
-          >
-            Help Center
           </ProfileMenuItem>
         </Box>
         <Divider />
         <Box sx={{ py: 1 }}>
-          {demoUser ? (
-            <ProfileMenuItem onClick={handleClose} icon="material-symbols:logout-rounded">
-              Sign Out
-            </ProfileMenuItem>
-          ) : (
-            <ProfileMenuItem href={paths.login} icon="material-symbols:login-rounded">
-              Sign In
-            </ProfileMenuItem>
-          )}
+          <ProfileMenuItem
+            onClick={() => {
+              handleClose();
+              void logout();
+            }}
+            icon="material-symbols:logout-rounded"
+          >
+            Sign Out
+          </ProfileMenuItem>
         </Box>
       </Menu>
     </>
@@ -185,11 +159,3 @@ const ProfileMenuItem = ({
 };
 
 export default ProfileMenu;
-
-const demoUser = {
-  id: 0,
-  email: '',
-  name: 'Admin',
-  avatar: null as string | null,
-  designation: '',
-};

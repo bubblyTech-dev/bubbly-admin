@@ -45,14 +45,6 @@ const sitemap: MenuItem[] = [
         active: true,
       },
       {
-        name: 'Account',
-        key: 'account',
-        path: paths.account,
-        pathName: 'account',
-        active: true,
-        icon: 'material-symbols:admin-panel-settings-outline-rounded',
-      },
-      {
         name: 'Starter',
         path: paths.starter,
         pathName: 'starter',
@@ -65,13 +57,6 @@ const sitemap: MenuItem[] = [
         active: true,
         icon: 'material-symbols:warning-outline-rounded',
         path: paths[404],
-      },
-      {
-        name: 'Login',
-        icon: 'material-symbols:login',
-        path: paths.login,
-        pathName: 'login',
-        active: true,
       },
       {
         name: 'Multi level',

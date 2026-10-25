@@ -1,6 +1,6 @@
 import { ReactElement } from 'react';
 import { Stack, SxProps } from '@mui/material';
-import NotificationMenu from './NotificationMenu';
+// import NotificationMenu from './NotificationMenu'; // hidden for now
 import ProfileMenu from './ProfileMenu';
 import ThemePicker from './ThemePicker';
 
@@ -22,7 +22,7 @@ const AppbarActionItems = ({ sx, searchComponent }: AppbarActionItemsProps) => {
     >
       {searchComponent}
       <ThemePicker />
-      <NotificationMenu />
+      {/* <NotificationMenu /> */}
       <ProfileMenu />
     </Stack>
   );

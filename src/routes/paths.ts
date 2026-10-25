@@ -1,6 +1,5 @@
 export const rootPaths = {
   root: '/',
-  authRoot: 'auth',
 };
 
 const paths = {
@@ -8,7 +7,10 @@ const paths = {
   starter: `/starter`,
   users: `/users`,
   account: `/account`,
-  login: `/${rootPaths.authRoot}/login`,
+  login: `/login`,
+  forgotPassword: `/forgot-password`,
+  resetPassword: `/reset-password`,
+  changePassword: `/change-password`,
   notifications: `/notifications`,
 
   404: `/404`,

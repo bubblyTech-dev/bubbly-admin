@@ -1,24 +1,51 @@
 import { useState } from 'react';
-import { Link, Stack, Typography } from '@mui/material';
+import { Alert, Stack, TextField } from '@mui/material';
+import { parseApiError } from 'lib/api';
 import { useAccounts } from 'providers/AccountsProvider';
+import { useAuth } from 'providers/AuthProvider';
 import IconifyIcon from 'components/base/IconifyIcon';
-import PhoneTextfield from 'components/base/PhoneTextfield';
 import AccountDialog from '../common/AccountDialog';
 import InfoCard from '../common/InfoCard';
 import InfoCardAttribute from '../common/InfoCardAttribute';
 
 const Phone = () => {
-  const [open, setOpen] = useState(false);
   const { personalInfo } = useAccounts();
-  const match = personalInfo.phoneNumber.match(/\(\+(\d+)\)(\d+)/);
+  const { updateProfile } = useAuth();
+  const [open, setOpen] = useState(false);
+  const [phone, setPhone] = useState(personalInfo.phone);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+  const [fieldError, setFieldError] = useState('');
+
+  const handleOpen = () => {
+    setPhone(personalInfo.phone);
+    setError('');
+    setFieldError('');
+    setOpen(true);
+  };
 
   const handleClose = () => setOpen(false);
 
+  const handleConfirm = async () => {
+    setError('');
+    setFieldError('');
+    setSaving(true);
+    try {
+      await updateProfile({ phone }); // an empty value clears the number
+      setOpen(false);
+    } catch (err) {
+      const info = parseApiError(err);
+      setError(info.message);
+      setFieldError(info.fields.phone ?? '');
+    }
+    setSaving(false);
+  };
+
   return (
     <>
-      <InfoCard setOpen={setOpen} sx={{ mb: 2 }}>
+      <InfoCard setOpen={() => handleOpen()}>
         <Stack direction="column" spacing={{ xs: 2, sm: 1 }}>
-          <InfoCardAttribute label="Number" value={personalInfo.phoneNumber} />
+          <InfoCardAttribute label="Number" value={personalInfo.phone || '-'} />
         </Stack>
         <IconifyIcon
           icon="material-symbols-light:edit-outline"
@@ -27,39 +54,27 @@ const Phone = () => {
       </InfoCard>
       <AccountDialog
         title="Phone"
-        subtitle="Ensure your phone number to enable account recovery and receive important notifications."
+        subtitle="Add a phone number your team can reach you on. Leave it empty to remove it."
         open={open}
-        handleConfirm={handleClose}
+        confirming={saving}
+        handleConfirm={handleConfirm}
         handleDialogClose={handleClose}
         handleDiscard={handleClose}
-        sx={{
-          maxWidth: 463,
-        }}
+        sx={{ maxWidth: 463 }}
       >
-        <PhoneTextfield
-          defaultValue={{
-            code: match?.[1] as string,
-            number: match?.[2] as string,
-          }}
-        />
+        <Stack direction="column" spacing={1} p={0.125}>
+          {error && <Alert severity="error">{error}</Alert>}
+          <TextField
+            placeholder="Phone"
+            label="Phone"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            error={Boolean(fieldError)}
+            helperText={fieldError}
+            fullWidth
+          />
+        </Stack>
       </AccountDialog>
-      <Stack direction="column" spacing={1} alignItems="flex-start">
-        <Typography variant="body2" sx={{ color: 'text.secondary', textWrap: 'pretty' }}>
-          This phone number has to be confirmed to ensure its authenticity first before being
-          connected with your profile.
-        </Typography>
-        <Link
-          href="#!"
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            fontSize: 'body2.fontSize',
-          }}
-        >
-          Confirm your number{' '}
-          <IconifyIcon icon="material-symbols:chevron-right" sx={{ fontSize: 20 }} />
-        </Link>
-      </Stack>
     </>
   );
 };

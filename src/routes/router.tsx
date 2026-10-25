@@ -5,7 +5,8 @@ import AuthLayout from 'layouts/auth-layout';
 import MainLayout from 'layouts/main-layout';
 import Page404 from 'pages/errors/Page404';
 import PageLoader from 'components/loading/PageLoader';
-import paths, { rootPaths } from './paths';
+import { GuestOnly, RequireAuth } from './guards';
+import paths from './paths';
 
 const Analytics = lazy(() => import('pages/dashboard/Analytics'));
 const UserList = lazy(() => import('pages/users/UserList'));
@@ -13,6 +14,9 @@ const Starter = lazy(() => import('pages/others/Starter'));
 const Account = lazy(() => import('pages/others/Account'));
 
 const Login = lazy(() => import('pages/authentication/Login'));
+const ForgotPassword = lazy(() => import('pages/authentication/ForgotPassword'));
+const ResetPassword = lazy(() => import('pages/authentication/ResetPassword'));
+const ChangePassword = lazy(() => import('pages/authentication/ChangePassword'));
 
 export const SuspenseOutlet = () => {
   const location = useLocation();
@@ -29,33 +33,40 @@ export const routes: RouteObject[] = [
     element: <App />,
     children: [
       {
-        path: '/',
-        element: (
-          <MainLayout>
-            <SuspenseOutlet />
-          </MainLayout>
-        ),
+        // everything inside the workspace needs a logged-in admin
+        element: <RequireAuth />,
         children: [
           {
-            index: true,
-            element: <Analytics />,
-          },
-          {
-            path: paths.users,
-            element: <UserList />,
-          },
-          {
-            path: paths.account,
-            element: <Account />,
-          },
-          {
-            path: paths.starter,
-            element: <Starter />,
+            path: '/',
+            element: (
+              <MainLayout>
+                <SuspenseOutlet />
+              </MainLayout>
+            ),
+            children: [
+              { index: true, element: <Analytics /> },
+              { path: paths.users, element: <UserList /> },
+              { path: paths.account, element: <Account /> },
+              { path: paths.starter, element: <Starter /> },
+            ],
           },
         ],
       },
       {
-        path: rootPaths.authRoot,
+        // forced password change: logged in, but nothing else is reachable yet
+        element: <RequireAuth allowPendingPasswordChange />,
+        children: [
+          {
+            element: (
+              <AuthLayout>
+                <SuspenseOutlet />
+              </AuthLayout>
+            ),
+            children: [{ path: paths.changePassword, element: <ChangePassword /> }],
+          },
+        ],
+      },
+      {
         element: (
           <AuthLayout>
             <SuspenseOutlet />
@@ -63,9 +74,14 @@ export const routes: RouteObject[] = [
         ),
         children: [
           {
-            path: paths.login,
-            element: <Login />,
+            element: <GuestOnly />,
+            children: [
+              { path: paths.login, element: <Login /> },
+              { path: paths.forgotPassword, element: <ForgotPassword /> },
+            ],
           },
+          // opened from the email link, so it works whether or not someone is logged in
+          { path: paths.resetPassword, element: <ResetPassword /> },
         ],
       },
 
