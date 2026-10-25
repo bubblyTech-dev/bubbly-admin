@@ -13,6 +13,7 @@ export interface SubMenuItem {
   /** permission key an admin needs to see this item (the master always sees it) */
   permission?: string;
   permission?: string; // the admin permission that shows this item (used by the sidebar)
+  permission?: string; // the admin needs this permission to see the item (the backend enforces it too)
   icon?: string;
   iconSx?: SxProps;
   permission?: string; // the admin needs this permission to see the item
@@ -39,6 +40,14 @@ const sitemap: MenuItem[] = [
         path: rootPaths.root,
         pathName: 'dashboard',
         icon: 'material-symbols:query-stats-rounded',
+        active: true,
+      },
+      {
+        name: 'Schools',
+        path: paths.schools,
+        pathName: 'schools',
+        icon: 'material-symbols:school-outline',
+        permission: 'schools.view',
         active: true,
       },
       {

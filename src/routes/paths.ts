@@ -11,6 +11,9 @@ const paths = {
   plans: `/plans`,
   plansNew: `/plans/new`,
   modules: `/modules`,
+  schools: `/schools`,
+  schoolNew: `/schools/new`,
+  schoolDetail: `/schools/:uuid`,
   account: `/account`,
   settings: `/settings`,
   login: `/login`,
@@ -24,5 +27,7 @@ const paths = {
 
 // the address of one staff member
 export const userPath = (uuid: string) => `/users/${uuid}`;
+// the address of one school, by its uuid
+export const schoolPath = (uuid: string) => `/schools/${uuid}`;
 
 export default paths;

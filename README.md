@@ -77,6 +77,10 @@ Absolute imports are enabled (for example `import paths from 'routes/paths'`).
 - Sidebar items carry a `permission` (`plans.view`, `modules.view`) in `routes/sitemap.ts`; the buttons on the pages use `useAuth().hasPermission`. The backend enforces every permission.
 ## Settings page
 `/settings` (menu item Settings, needs `settings.view`) shows the platform settings in tabs: General, Billing & Tax, Policy, Renewals and Email. The forms are built from what the API returns for each setting (label, description, type and limits), so a new setting only needs adding in the backend `config/settings.js`. Each tab saves on its own and shows field errors; without `settings.edit` the fields are read-only. The renewal reminder days are typed as a comma separated list.
+## Schools module
+- Pages: `/schools` (list with search, status filter and paging), `/schools/new`, `/schools/:uuid` (tabs: Overview form with logo, Notes, Status history). Suspend, reactivate and archive go through a dialog that requires a reason; only an archived school can be deleted.
+- Code: `src/pages/schools/`, `src/components/sections/schools/`, `src/services/schoolService.ts`, `src/types/school.ts`. The logo uses `FileUploadBox` with the `clientLogo` file type (its rules come from the backend).
+- The sidebar item carries `permission: 'schools.view'`; buttons are shown only when the admin holds the matching `schools.*` permission (the backend enforces it as well).
 
 ## Theming and layout
 

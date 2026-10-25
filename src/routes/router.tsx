@@ -12,6 +12,9 @@ const Analytics = lazy(() => import('pages/dashboard/Analytics'));
 const UserList = lazy(() => import('pages/users/UserList'));
 const UserDetail = lazy(() => import('pages/users/UserDetail'));
 const AuditLogs = lazy(() => import('pages/audit/AuditLogs'));
+const SchoolList = lazy(() => import('pages/schools/SchoolList'));
+const SchoolNew = lazy(() => import('pages/schools/SchoolNew'));
+const SchoolDetail = lazy(() => import('pages/schools/SchoolDetail'));
 const Starter = lazy(() => import('pages/others/Starter'));
 const PlanList = lazy(() => import('pages/plans/PlanList'));
 const PlanForm = lazy(() => import('pages/plans/PlanForm'));
@@ -62,6 +65,10 @@ export const routes: RouteObject[] = [
                 element: <RequirePermission permission="audit.view" />,
                 children: [{ path: paths.auditLogs, element: <AuditLogs /> }],
               },
+              { path: paths.users, element: <UserList /> },
+              { path: paths.schools, element: <SchoolList /> },
+              { path: paths.schoolNew, element: <SchoolNew /> },
+              { path: paths.schoolDetail, element: <SchoolDetail /> },
               { path: paths.account, element: <Account /> },
               { path: paths.starter, element: <Starter /> },
               { path: paths.plans, element: <PlanList /> },
