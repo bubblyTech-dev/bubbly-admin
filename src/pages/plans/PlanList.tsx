@@ -14,7 +14,6 @@ import {
   TableCell,
   TableContainer,
   TableHead,
-  TablePagination,
   TableRow,
   TextField,
   Tooltip,
@@ -29,6 +28,7 @@ import { PageMeta, Plan } from 'types/plans';
 import IconifyIcon from 'components/base/IconifyIcon';
 import ConfirmDialog from 'components/common/ConfirmDialog';
 import PageHeader from 'components/common/PageHeader';
+import TablePager from 'components/common/TablePager';
 import PlanStatusChip from 'components/sections/plans/PlanStatusChip';
 
 type PendingAction = { type: 'publish' | 'archive' | 'delete'; plan: Plan } | null;
@@ -62,7 +62,7 @@ const PlanList = () => {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [status, setStatus] = useState('');
   const [page, setPage] = useState(1);
-  const [perPage, setPerPage] = useState(15);
+  const perPage = 15;
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
@@ -301,17 +301,11 @@ const PlanList = () => {
             </Table>
           </TableContainer>
 
-          <TablePagination
-            component="div"
-            count={meta.total}
-            page={meta.page - 1}
-            rowsPerPage={meta.perPage}
-            rowsPerPageOptions={[15, 30, 50]}
-            onPageChange={(_event, value) => setPage(value + 1)}
-            onRowsPerPageChange={(e) => {
-              setPerPage(Number(e.target.value));
-              setPage(1);
-            }}
+          <TablePager
+            page={meta.page}
+            perPage={meta.perPage}
+            total={meta.total}
+            onChange={setPage}
           />
         </Stack>
       </Paper>

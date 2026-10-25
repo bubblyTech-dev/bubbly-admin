@@ -19,7 +19,6 @@ import {
   TableCell,
   TableContainer,
   TableHead,
-  TablePagination,
   TableRow,
   TextField,
   Typography,
@@ -38,6 +37,7 @@ import {
   announcementTypeLabels,
 } from 'types/announcements';
 import IconifyIcon from 'components/base/IconifyIcon';
+import TablePager from 'components/common/TablePager';
 import {
   AnnouncementStatusChip,
   AnnouncementTypeChip,
@@ -55,7 +55,7 @@ const AnnouncementList = () => {
   const [status, setStatus] = useState('');
   const [type, setType] = useState('');
   const [page, setPage] = useState(1);
-  const [perPage, setPerPage] = useState(15);
+  const perPage = 15;
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [toDelete, setToDelete] = useState<Announcement | null>(null);
@@ -291,18 +291,7 @@ const AnnouncementList = () => {
         </Table>
       </TableContainer>
 
-      <TablePagination
-        component="div"
-        count={meta.total}
-        page={meta.page - 1}
-        rowsPerPage={perPage}
-        rowsPerPageOptions={[15, 30, 50]}
-        onPageChange={(_event, value) => setPage(value + 1)}
-        onRowsPerPageChange={(e) => {
-          setPerPage(Number(e.target.value));
-          setPage(1);
-        }}
-      />
+      <TablePager page={meta.page} perPage={meta.perPage} total={meta.total} onChange={setPage} />
 
       <Dialog open={Boolean(toDelete)} onClose={() => setToDelete(null)}>
         <DialogTitle>Delete announcement?</DialogTitle>

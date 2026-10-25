@@ -13,7 +13,6 @@ import {
   TableCell,
   TableContainer,
   TableHead,
-  TablePagination,
   TableRow,
   TextField,
   Typography,
@@ -31,6 +30,7 @@ import {
   PageMeta,
 } from 'types/inquiries';
 import IconifyIcon from 'components/base/IconifyIcon';
+import TablePager from 'components/common/TablePager';
 import InquiryDrawer from 'components/sections/inquiries/InquiryDrawer';
 import InquiryStatusChip from 'components/sections/inquiries/InquiryStatusChip';
 
@@ -259,14 +259,7 @@ const InquiryList = () => {
           </Table>
         </TableContainer>
 
-        <TablePagination
-          component="div"
-          count={meta?.total ?? 0}
-          page={page - 1}
-          rowsPerPage={PER_PAGE}
-          rowsPerPageOptions={[PER_PAGE]}
-          onPageChange={(_event, value) => setPage(value + 1)}
-        />
+        <TablePager page={page} perPage={PER_PAGE} total={meta?.total ?? 0} onChange={setPage} />
       </Stack>
 
       <InquiryDrawer
