@@ -61,6 +61,9 @@ public/           static assets
 
 Absolute imports are enabled (for example `import paths from 'routes/paths'`).
 
+## Announcements
+`/announcements` lists platform notices (search, status and type filters, publish, unpublish, delete). `/announcements/new` and `/announcements/:uuid` share one form with a live preview. A published notice can only change its end time. The audience can only be "All schools" until the Schools and Plans modules are connected. The sidebar item uses `permission: 'announcements.view'` (the optional `permission` field on menu items).
+
 ## Theming and layout
 
 Everything below is built into this app (the free template ships light only, with these features locked).
