@@ -10,6 +10,9 @@ import paths from './paths';
 
 const Analytics = lazy(() => import('pages/dashboard/Analytics'));
 const UserList = lazy(() => import('pages/users/UserList'));
+const SchoolList = lazy(() => import('pages/schools/SchoolList'));
+const SchoolNew = lazy(() => import('pages/schools/SchoolNew'));
+const SchoolDetail = lazy(() => import('pages/schools/SchoolDetail'));
 const Starter = lazy(() => import('pages/others/Starter'));
 const Account = lazy(() => import('pages/others/Account'));
 
@@ -46,6 +49,9 @@ export const routes: RouteObject[] = [
             children: [
               { index: true, element: <Analytics /> },
               { path: paths.users, element: <UserList /> },
+              { path: paths.schools, element: <SchoolList /> },
+              { path: paths.schoolNew, element: <SchoolNew /> },
+              { path: paths.schoolDetail, element: <SchoolDetail /> },
               { path: paths.account, element: <Account /> },
               { path: paths.starter, element: <Starter /> },
             ],

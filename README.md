@@ -61,6 +61,11 @@ public/           static assets
 
 Absolute imports are enabled (for example `import paths from 'routes/paths'`).
 
+## Schools module
+- Pages: `/schools` (list with search, status filter and paging), `/schools/new`, `/schools/:uuid` (tabs: Overview form with logo, Notes, Status history). Suspend, reactivate and archive go through a dialog that requires a reason; only an archived school can be deleted.
+- Code: `src/pages/schools/`, `src/components/sections/schools/`, `src/services/schoolService.ts`, `src/types/school.ts`. The logo uses `FileUploadBox` with the `clientLogo` file type (its rules come from the backend).
+- The sidebar item carries `permission: 'schools.view'`; buttons are shown only when the admin holds the matching `schools.*` permission (the backend enforces it as well).
+
 ## Theming and layout
 
 Everything below is built into this app (the free template ships light only, with these features locked).
