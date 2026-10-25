@@ -12,6 +12,7 @@ export interface SubMenuItem {
   active?: boolean;
   icon?: string;
   iconSx?: SxProps;
+  permission?: string; // the admin needs this permission to see the item
   items?: SubMenuItem[];
 }
 
@@ -42,6 +43,14 @@ const sitemap: MenuItem[] = [
         path: paths.users,
         pathName: 'users',
         icon: 'material-symbols:account-box-outline',
+        active: true,
+      },
+      {
+        name: 'Settings',
+        path: paths.settings,
+        pathName: 'settings',
+        icon: 'material-symbols:settings-outline-rounded',
+        permission: 'settings.view',
         active: true,
       },
       {

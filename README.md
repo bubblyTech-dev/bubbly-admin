@@ -61,6 +61,9 @@ public/           static assets
 
 Absolute imports are enabled (for example `import paths from 'routes/paths'`).
 
+## Settings page
+`/settings` (menu item Settings, needs `settings.view`) shows the platform settings in tabs: General, Billing & Tax, Policy, Renewals and Email. The forms are built from what the API returns for each setting (label, description, type and limits), so a new setting only needs adding in the backend `config/settings.js`. Each tab saves on its own and shows field errors; without `settings.edit` the fields are read-only. The renewal reminder days are typed as a comma separated list.
+
 ## Theming and layout
 
 Everything below is built into this app (the free template ships light only, with these features locked).

@@ -12,6 +12,7 @@ const Analytics = lazy(() => import('pages/dashboard/Analytics'));
 const UserList = lazy(() => import('pages/users/UserList'));
 const Starter = lazy(() => import('pages/others/Starter'));
 const Account = lazy(() => import('pages/others/Account'));
+const Settings = lazy(() => import('pages/settings/Settings'));
 
 const Login = lazy(() => import('pages/authentication/Login'));
 const ForgotPassword = lazy(() => import('pages/authentication/ForgotPassword'));
@@ -48,6 +49,7 @@ export const routes: RouteObject[] = [
               { path: paths.users, element: <UserList /> },
               { path: paths.account, element: <Account /> },
               { path: paths.starter, element: <Starter /> },
+              { path: paths.settings, element: <Settings /> },
             ],
           },
         ],

@@ -7,6 +7,7 @@ const paths = {
   starter: `/starter`,
   users: `/users`,
   account: `/account`,
+  settings: `/settings`,
   login: `/login`,
   forgotPassword: `/forgot-password`,
   resetPassword: `/reset-password`,
