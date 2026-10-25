@@ -11,6 +11,9 @@ import paths from './paths';
 const Analytics = lazy(() => import('pages/dashboard/Analytics'));
 const UserList = lazy(() => import('pages/users/UserList'));
 const Starter = lazy(() => import('pages/others/Starter'));
+const PlanList = lazy(() => import('pages/plans/PlanList'));
+const PlanForm = lazy(() => import('pages/plans/PlanForm'));
+const ModuleList = lazy(() => import('pages/modules/ModuleList'));
 const Account = lazy(() => import('pages/others/Account'));
 
 const Login = lazy(() => import('pages/authentication/Login'));
@@ -48,6 +51,10 @@ export const routes: RouteObject[] = [
               { path: paths.users, element: <UserList /> },
               { path: paths.account, element: <Account /> },
               { path: paths.starter, element: <Starter /> },
+              { path: paths.plans, element: <PlanList /> },
+              { path: paths.plansNew, element: <PlanForm /> },
+              { path: `${paths.plans}/:uuid`, element: <PlanForm /> },
+              { path: paths.modules, element: <ModuleList /> },
             ],
           },
         ],

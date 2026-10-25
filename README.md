@@ -61,6 +61,13 @@ public/           static assets
 
 Absolute imports are enabled (for example `import paths from 'routes/paths'`).
 
+## Plans and modules
+- `/plans`: list with search and status filter; actions edit, publish, duplicate, archive and delete (drafts only). `/plans/new` and `/plans/:uuid` is the form: details, price (entered in rupees, stored in paise), billing interval, GST, limits (each with an Unlimited switch) and the module checklist (core modules are always included).
+- A published plan keeps its price, interval, tax setting and link name; the form shows them locked. To change a price, use Duplicate to create a new draft version.
+- `/modules`: list of modules with an edit dialog (name, description, order, active; core modules stay active).
+- The API calls live in `src/services/planService.ts` and `moduleService.ts`; the limit keys and billing intervals come from `GET /admin/plans/options`, so nothing is hard-coded here.
+- Sidebar items carry a `permission` (`plans.view`, `modules.view`) in `routes/sitemap.ts`; the buttons on the pages use `useAuth().hasPermission`. The backend enforces every permission.
+
 ## Theming and layout
 
 Everything below is built into this app (the free template ships light only, with these features locked).

@@ -10,6 +10,7 @@ export interface SubMenuItem {
   path?: string;
   target?: HTMLAttributeAnchorTarget;
   active?: boolean;
+  permission?: string; // the admin permission that shows this item (used by the sidebar)
   icon?: string;
   iconSx?: SxProps;
   items?: SubMenuItem[];
@@ -42,6 +43,22 @@ const sitemap: MenuItem[] = [
         path: paths.users,
         pathName: 'users',
         icon: 'material-symbols:account-box-outline',
+        active: true,
+      },
+      {
+        name: 'Plans',
+        path: paths.plans,
+        pathName: 'plans',
+        icon: 'material-symbols:sell-outline',
+        permission: 'plans.view',
+        active: true,
+      },
+      {
+        name: 'Modules',
+        path: paths.modules,
+        pathName: 'modules',
+        icon: 'material-symbols:widgets-outline-rounded',
+        permission: 'modules.view',
         active: true,
       },
       {
