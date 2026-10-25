@@ -14,6 +14,8 @@ export interface SubMenuItem {
   permission?: string;
   permission?: string; // the admin permission that shows this item (used by the sidebar)
   permission?: string; // the admin needs this permission to see the item (the backend enforces it too)
+  permission?: string; // the admin needs this permission to see the item
+  badge?: 'inquiries'; // small counter shown next to the name
   icon?: string;
   iconSx?: SxProps;
   permission?: string; // the admin needs this permission to see the item
@@ -88,6 +90,15 @@ const sitemap: MenuItem[] = [
         pathName: 'settings',
         icon: 'material-symbols:settings-outline-rounded',
         permission: 'settings.view',
+        active: true,
+      },
+      {
+        name: 'Inquiries',
+        path: paths.inquiries,
+        pathName: 'inquiries',
+        icon: 'material-symbols:inbox-outline-rounded',
+        permission: 'inquiries.view',
+        badge: 'inquiries',
         active: true,
       },
       {

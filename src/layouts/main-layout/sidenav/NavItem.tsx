@@ -12,6 +12,7 @@ import { useSettingsContext } from 'providers/SettingsProvider';
 import { COLLAPSE_NAVBAR } from 'reducers/SettingsReducer';
 import { SubMenuItem } from 'routes/sitemap';
 import IconifyIcon from 'components/base/IconifyIcon';
+import InquiryBadge from 'components/sections/inquiries/InquiryBadge';
 import { useNavContext } from '../NavProvider';
 import NavItemPopper from './NavItemPopper';
 
@@ -210,6 +211,7 @@ const NavItem = ({ item, level }: NavItemProps) => {
             >
               {item.name}
             </ListItemText>
+            {item.badge === 'inquiries' && <InquiryBadge />}
             {hasNestedItems && expandIcon}
           </Box>
           {hasNestedItems && sidenavCollapsed && (

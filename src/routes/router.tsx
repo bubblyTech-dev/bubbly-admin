@@ -15,6 +15,7 @@ const AuditLogs = lazy(() => import('pages/audit/AuditLogs'));
 const SchoolList = lazy(() => import('pages/schools/SchoolList'));
 const SchoolNew = lazy(() => import('pages/schools/SchoolNew'));
 const SchoolDetail = lazy(() => import('pages/schools/SchoolDetail'));
+const InquiryList = lazy(() => import('pages/inquiries/InquiryList'));
 const Starter = lazy(() => import('pages/others/Starter'));
 const PlanList = lazy(() => import('pages/plans/PlanList'));
 const PlanForm = lazy(() => import('pages/plans/PlanForm'));
@@ -69,6 +70,7 @@ export const routes: RouteObject[] = [
               { path: paths.schools, element: <SchoolList /> },
               { path: paths.schoolNew, element: <SchoolNew /> },
               { path: paths.schoolDetail, element: <SchoolDetail /> },
+              { path: paths.inquiries, element: <InquiryList /> },
               { path: paths.account, element: <Account /> },
               { path: paths.starter, element: <Starter /> },
               { path: paths.plans, element: <PlanList /> },

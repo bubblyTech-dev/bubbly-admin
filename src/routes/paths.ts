@@ -14,6 +14,7 @@ const paths = {
   schools: `/schools`,
   schoolNew: `/schools/new`,
   schoolDetail: `/schools/:uuid`,
+  inquiries: `/inquiries`,
   account: `/account`,
   settings: `/settings`,
   login: `/login`,
