@@ -81,6 +81,8 @@ Absolute imports are enabled (for example `import paths from 'routes/paths'`).
 - Pages: `/schools` (list with search, status filter and paging), `/schools/new`, `/schools/:uuid` (tabs: Overview form with logo, Notes, Status history). Suspend, reactivate and archive go through a dialog that requires a reason; only an archived school can be deleted.
 - Code: `src/pages/schools/`, `src/components/sections/schools/`, `src/services/schoolService.ts`, `src/types/school.ts`. The logo uses `FileUploadBox` with the `clientLogo` file type (its rules come from the backend).
 - The sidebar item carries `permission: 'schools.view'`; buttons are shown only when the admin holds the matching `schools.*` permission (the backend enforces it as well).
+## Announcements
+`/announcements` lists platform notices (search, status and type filters, publish, unpublish, delete). `/announcements/new` and `/announcements/:uuid` share one form with a live preview. A published notice can only change its end time. The audience can only be "All schools" until the Schools and Plans modules are connected. The sidebar item uses `permission: 'announcements.view'` (the optional `permission` field on menu items).
 
 ## Theming and layout
 

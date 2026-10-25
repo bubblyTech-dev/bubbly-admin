@@ -22,6 +22,8 @@ const paths = {
   resetPassword: `/reset-password`,
   changePassword: `/change-password`,
   notifications: `/notifications`,
+  announcements: `/announcements`,
+  announcementNew: `/announcements/new`,
 
   404: `/404`,
 };

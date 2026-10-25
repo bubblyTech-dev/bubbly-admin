@@ -22,6 +22,8 @@ const PlanForm = lazy(() => import('pages/plans/PlanForm'));
 const ModuleList = lazy(() => import('pages/modules/ModuleList'));
 const Account = lazy(() => import('pages/others/Account'));
 const Settings = lazy(() => import('pages/settings/Settings'));
+const AnnouncementList = lazy(() => import('pages/announcements/AnnouncementList'));
+const AnnouncementForm = lazy(() => import('pages/announcements/AnnouncementForm'));
 
 const Login = lazy(() => import('pages/authentication/Login'));
 const ForgotPassword = lazy(() => import('pages/authentication/ForgotPassword'));
@@ -78,6 +80,9 @@ export const routes: RouteObject[] = [
               { path: `${paths.plans}/:uuid`, element: <PlanForm /> },
               { path: paths.modules, element: <ModuleList /> },
               { path: paths.settings, element: <Settings /> },
+              { path: paths.announcements, element: <AnnouncementList /> },
+              { path: paths.announcementNew, element: <AnnouncementForm /> },
+              { path: `${paths.announcements}/:uuid`, element: <AnnouncementForm /> },
             ],
           },
         ],
