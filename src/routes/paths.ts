@@ -12,6 +12,7 @@ const paths = {
   plansNew: `/plans/new`,
   modules: `/modules`,
   account: `/account`,
+  settings: `/settings`,
   login: `/login`,
   forgotPassword: `/forgot-password`,
   resetPassword: `/reset-password`,

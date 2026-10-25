@@ -75,6 +75,8 @@ Absolute imports are enabled (for example `import paths from 'routes/paths'`).
 - `/modules`: list of modules with an edit dialog (name, description, order, active; core modules stay active).
 - The API calls live in `src/services/planService.ts` and `moduleService.ts`; the limit keys and billing intervals come from `GET /admin/plans/options`, so nothing is hard-coded here.
 - Sidebar items carry a `permission` (`plans.view`, `modules.view`) in `routes/sitemap.ts`; the buttons on the pages use `useAuth().hasPermission`. The backend enforces every permission.
+## Settings page
+`/settings` (menu item Settings, needs `settings.view`) shows the platform settings in tabs: General, Billing & Tax, Policy, Renewals and Email. The forms are built from what the API returns for each setting (label, description, type and limits), so a new setting only needs adding in the backend `config/settings.js`. Each tab saves on its own and shows field errors; without `settings.edit` the fields are read-only. The renewal reminder days are typed as a comma separated list.
 
 ## Theming and layout
 

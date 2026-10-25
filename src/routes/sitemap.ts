@@ -15,6 +15,7 @@ export interface SubMenuItem {
   permission?: string; // the admin permission that shows this item (used by the sidebar)
   icon?: string;
   iconSx?: SxProps;
+  permission?: string; // the admin needs this permission to see the item
   items?: SubMenuItem[];
 }
 
@@ -70,6 +71,14 @@ const sitemap: MenuItem[] = [
         pathName: 'modules',
         icon: 'material-symbols:widgets-outline-rounded',
         permission: 'modules.view',
+        active: true,
+      },
+      {
+        name: 'Settings',
+        path: paths.settings,
+        pathName: 'settings',
+        icon: 'material-symbols:settings-outline-rounded',
+        permission: 'settings.view',
         active: true,
       },
       {
