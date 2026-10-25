@@ -28,8 +28,8 @@ import { planService } from 'services/planService';
 import { PageMeta, Plan } from 'types/plans';
 import IconifyIcon from 'components/base/IconifyIcon';
 import ConfirmDialog from 'components/common/ConfirmDialog';
+import PageHeader from 'components/common/PageHeader';
 import PlanStatusChip from 'components/sections/plans/PlanStatusChip';
-import PageHeader from 'components/sections/user-table/PageHeader';
 
 type PendingAction = { type: 'publish' | 'archive' | 'delete'; plan: Plan } | null;
 

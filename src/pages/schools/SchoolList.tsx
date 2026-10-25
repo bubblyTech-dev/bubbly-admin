@@ -1,7 +1,7 @@
 import { Paper, Stack } from '@mui/material';
 import paths from 'routes/paths';
+import PageHeader from 'components/common/PageHeader';
 import SchoolsTable from 'components/sections/schools/SchoolsTable';
-import PageHeader from 'components/sections/user-table/PageHeader';
 
 const SchoolList = () => {
   return (

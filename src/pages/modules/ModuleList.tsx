@@ -28,7 +28,7 @@ import paths from 'routes/paths';
 import { moduleService } from 'services/moduleService';
 import { PlanModule } from 'types/plans';
 import IconifyIcon from 'components/base/IconifyIcon';
-import PageHeader from 'components/sections/user-table/PageHeader';
+import PageHeader from 'components/common/PageHeader';
 
 const ModuleList = () => {
   const { hasPermission } = useAuth();

@@ -23,8 +23,8 @@ import { moduleService } from 'services/moduleService';
 import { planService } from 'services/planService';
 import { Plan, PlanInput, PlanModule, PlanOptions } from 'types/plans';
 import ConfirmDialog from 'components/common/ConfirmDialog';
+import PageHeader from 'components/common/PageHeader';
 import PlanStatusChip from 'components/sections/plans/PlanStatusChip';
-import PageHeader from 'components/sections/user-table/PageHeader';
 
 interface LimitField {
   unlimited: boolean;

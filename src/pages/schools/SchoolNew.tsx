@@ -1,8 +1,8 @@
 import { useNavigate } from 'react-router';
 import { Paper, Stack } from '@mui/material';
 import paths, { schoolPath } from 'routes/paths';
+import PageHeader from 'components/common/PageHeader';
 import SchoolForm from 'components/sections/schools/SchoolForm';
-import PageHeader from 'components/sections/user-table/PageHeader';
 
 const SchoolNew = () => {
   const navigate = useNavigate();

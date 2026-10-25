@@ -12,14 +12,9 @@ export interface SubMenuItem {
   active?: boolean;
   /** permission key an admin needs to see this item (the master always sees it) */
   permission?: string;
-  permission?: string; // the admin permission that shows this item (used by the sidebar)
-  permission?: string; // the admin needs this permission to see the item (the backend enforces it too)
-  permission?: string; // the admin needs this permission to see the item
   badge?: 'inquiries'; // small counter shown next to the name
   icon?: string;
   iconSx?: SxProps;
-  permission?: string; // the admin needs this permission to see the item
-  permission?: string; // the menu item is only for admins holding this permission
   items?: SubMenuItem[];
 }
 
@@ -46,69 +41,85 @@ const sitemap: MenuItem[] = [
         active: true,
       },
       {
-        name: 'Schools',
-        path: paths.schools,
-        pathName: 'schools',
-        icon: 'material-symbols:school-outline',
-        permission: 'schools.view',
+        name: 'Management',
+        pathName: 'management',
+        icon: 'material-symbols:folder-outline-rounded',
         active: true,
-      },
-      {
-        name: 'Users',
-        path: paths.users,
-        pathName: 'users',
-        icon: 'material-symbols:account-box-outline',
-        active: true,
-        permission: 'users_access.view',
-      },
-      {
-        name: 'Audit Log',
-        path: paths.auditLogs,
-        pathName: 'audit-logs',
-        icon: 'material-symbols:history-rounded',
-        active: true,
-        permission: 'audit.view',
-      },
-      {
-        name: 'Plans',
-        path: paths.plans,
-        pathName: 'plans',
-        icon: 'material-symbols:sell-outline',
-        permission: 'plans.view',
-        active: true,
-      },
-      {
-        name: 'Modules',
-        path: paths.modules,
-        pathName: 'modules',
-        icon: 'material-symbols:widgets-outline-rounded',
-        permission: 'modules.view',
-        active: true,
+        items: [
+          {
+            name: 'Schools',
+            path: paths.schools,
+            pathName: 'schools',
+            icon: 'material-symbols:school-outline',
+            permission: 'schools.view',
+            active: true,
+          },
+          {
+            name: 'Plans',
+            path: paths.plans,
+            pathName: 'plans',
+            icon: 'material-symbols:sell-outline',
+            permission: 'plans.view',
+            active: true,
+          },
+          {
+            name: 'Modules',
+            path: paths.modules,
+            pathName: 'modules',
+            icon: 'material-symbols:widgets-outline-rounded',
+            permission: 'modules.view',
+            active: true,
+          },
+          {
+            name: 'Inquiries',
+            path: paths.inquiries,
+            pathName: 'inquiries',
+            icon: 'material-symbols:inbox-outline-rounded',
+            permission: 'inquiries.view',
+            badge: 'inquiries',
+            active: true,
+          },
+          {
+            name: 'Announcements',
+            path: paths.announcements,
+            pathName: 'announcements',
+            icon: 'material-symbols:event-note-outline-rounded',
+            permission: 'announcements.view',
+            active: true,
+          },
+        ],
       },
       {
         name: 'Settings',
-        path: paths.settings,
-        pathName: 'settings',
+        pathName: 'settings-group',
         icon: 'material-symbols:settings-outline-rounded',
-        permission: 'settings.view',
         active: true,
-      },
-      {
-        name: 'Inquiries',
-        path: paths.inquiries,
-        pathName: 'inquiries',
-        icon: 'material-symbols:inbox-outline-rounded',
-        permission: 'inquiries.view',
-        badge: 'inquiries',
-        active: true,
-      },
-      {
-        name: 'Announcements',
-        path: paths.announcements,
-        pathName: 'announcements',
-        icon: 'material-symbols:event-note-outline-rounded',
-        permission: 'announcements.view',
-        active: true,
+        items: [
+          {
+            name: 'User & Access',
+            path: paths.users,
+            pathName: 'users',
+            icon: 'material-symbols:manage-accounts-outline-rounded',
+            permission: 'users_access.view',
+            active: true,
+          },
+          {
+            name: 'Platform Settings',
+            path: paths.settings,
+            pathName: 'settings',
+            icon: 'material-symbols:settings-outline-rounded',
+            permission: 'settings.view',
+            active: true,
+          },
+          {
+            name: 'Audit Log',
+            path: paths.auditLogs,
+            pathName: 'audit-logs',
+            icon: 'material-symbols:history-rounded',
+            permission: 'audit.view',
+            active: true,
+          },
+        ],
       },
       {
         name: 'Starter',
@@ -215,6 +226,8 @@ export const filterByPermission = (
     .filter((item) => !item.permission || hasPermission(item.permission))
     .map((item) =>
       item.items ? { ...item, items: filterByPermission(item.items, hasPermission) } : item,
-    );
+    )
+    // a group with nothing left to show is hidden as well
+    .filter((item) => !item.items || item.items.length > 0);
 
 export default sitemap;

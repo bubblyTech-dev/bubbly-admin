@@ -20,10 +20,10 @@ const UserList = () => {
   return (
     <Stack direction="column" height={1}>
       <PageHeader
-        title="Users"
+        title="User & Access"
         breadcrumb={[
           { label: 'Home', url: paths.root },
-          { label: 'Users', active: true },
+          { label: 'User & Access', active: true },
         ]}
         actionComponent={
           hasPermission('users_access.create') ? (

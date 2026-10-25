@@ -19,13 +19,13 @@ import paths from 'routes/paths';
 import { schoolService } from 'services/schoolService';
 import { SCHOOL_STATUS, School } from 'types/school';
 import IconifyIcon from 'components/base/IconifyIcon';
+import PageHeader from 'components/common/PageHeader';
 import PageLoader from 'components/loading/PageLoader';
 import SchoolForm from 'components/sections/schools/SchoolForm';
 import SchoolNotes from 'components/sections/schools/SchoolNotes';
 import SchoolStatusChip from 'components/sections/schools/SchoolStatusChip';
 import SchoolStatusHistory from 'components/sections/schools/SchoolStatusHistory';
 import StatusChangeDialog from 'components/sections/schools/StatusChangeDialog';
-import PageHeader from 'components/sections/user-table/PageHeader';
 
 type TabKey = 'overview' | 'notes' | 'history';
 
