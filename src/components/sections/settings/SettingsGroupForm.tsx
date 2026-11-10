@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import {
   Alert,
+  Autocomplete,
   Box,
   Button,
+  Chip,
   FormControlLabel,
   Stack,
   Switch,
@@ -20,8 +22,10 @@ interface SettingsGroupFormProps {
 }
 
 // what the input shows for a saved value
-const toInput = (setting: SettingItem): string | boolean => {
+const toInput = (setting: SettingItem): string | boolean | string[] => {
   if (setting.type === 'boolean') return Boolean(setting.value);
+  if (setting.type === 'stringList')
+    return Array.isArray(setting.value) ? setting.value.map(String) : [];
   if (Array.isArray(setting.value)) return setting.value.join(', ');
   return setting.value === null || setting.value === undefined ? '' : String(setting.value);
 };
@@ -47,7 +51,7 @@ const SettingsGroupForm = ({ group, canEdit, onSaved }: SettingsGroupFormProps) 
   const [fields, setFields] = useState<Record<string, string>>({});
   const [saved, setSaved] = useState(false);
 
-  const handleChange = (key: string, value: string | boolean) => {
+  const handleChange = (key: string, value: string | boolean | string[]) => {
     setSaved(false);
     setValues((current) => ({ ...current, [key]: value }));
   };
@@ -97,12 +101,41 @@ const SettingsGroupForm = ({ group, canEdit, onSaved }: SettingsGroupFormProps) 
                 {helperFor(setting, fields[setting.key])}
               </Typography>
             </Box>
+          ) : setting.type === 'stringList' ? (
+            <Autocomplete
+              key={setting.key}
+              multiple
+              freeSolo
+              autoSelect
+              options={[]}
+              value={(values[setting.key] as string[]) ?? []}
+              onChange={(_event, next) => handleChange(setting.key, next as string[])}
+              disabled={!canEdit}
+              renderValue={(selected, getItemProps) =>
+                selected.map((option, index) => {
+                  const { key, ...itemProps } = getItemProps({ index });
+                  return <Chip key={key} label={option} {...itemProps} />;
+                })
+              }
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  id={setting.key}
+                  label={setting.label}
+                  placeholder={canEdit ? 'Type and press Enter to add' : undefined}
+                  error={Boolean(fields[setting.key])}
+                  helperText={helperFor(setting, fields[setting.key])}
+                />
+              )}
+            />
           ) : (
             <TextField
               key={setting.key}
               fullWidth
               id={setting.key}
               label={setting.label}
+              multiline={setting.type === 'text'}
+              minRows={setting.type === 'text' ? 3 : undefined}
               value={String(values[setting.key] ?? '')}
               onChange={(e) => handleChange(setting.key, e.target.value)}
               disabled={!canEdit}
