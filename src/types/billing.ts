@@ -24,12 +24,21 @@ export const paymentStatusColor: Record<PaymentStatus, ChipColor> = {
   6: 'warning',
 };
 
+// where a payment or subscription comes from: 1: Razorpay, 2: Offline (recorded by staff)
+export type BillingSource = 1 | 2;
+export const BILLING_SOURCE = { RAZORPAY: 1, OFFLINE: 2 } as const;
+export const billingSourceLabel: Record<BillingSource, string> = { 1: 'Online', 2: 'Offline' };
+
 export interface Payment {
   uuid: string;
   status: PaymentStatus;
+  source: BillingSource;
+  reference: string | null; // bank reference, cheque number or UPI id of an offline payment
+  notes: string | null;
+  recordedBy?: string; // the staff member who recorded an offline payment
   client?: { uuid: string; name: string };
   subscriptionUuid?: string;
-  razorpayPaymentId: string;
+  razorpayPaymentId: string | null;
   razorpayOrderId: string | null;
   razorpayInvoiceId: string | null;
   razorpayRefundId: string | null;
@@ -133,6 +142,7 @@ export interface WebhookEvent {
 export interface ListQuery {
   search?: string;
   status?: number;
+  source?: number;
   page?: number;
   perPage?: number;
 }
@@ -144,4 +154,16 @@ export interface WebhookEventListQuery extends ListQuery {
 export interface Paged<T> {
   items: T[];
   meta: PageMeta;
+}
+
+// ---------- offline payments ----------
+export interface OfflinePaymentInput {
+  schoolUuid: string;
+  planUuid: string;
+  amountPaise: number;
+  paidAt: string; // YYYY-MM-DD
+  method: string;
+  reference?: string;
+  validUntil: string; // YYYY-MM-DD, the last day the school may use the product
+  notes?: string;
 }

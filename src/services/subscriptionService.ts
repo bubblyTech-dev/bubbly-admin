@@ -35,6 +35,12 @@ export const subscriptionService = {
     return res.data.data.subscription;
   },
 
+  // offline subscriptions only: the last day the school may use the product
+  async changeExpiry(uuid: string, validUntil: string): Promise<Subscription> {
+    const res = await api.post(`/admin/subscriptions/${uuid}/expiry`, { validUntil });
+    return res.data.data.subscription;
+  },
+
   // refreshes one subscription from Razorpay
   async sync(uuid: string): Promise<Subscription> {
     const res = await api.post(`/admin/subscriptions/${uuid}/sync`);

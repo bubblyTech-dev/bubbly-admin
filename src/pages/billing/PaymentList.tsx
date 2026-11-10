@@ -31,6 +31,8 @@ import TablePager from 'components/common/TablePager';
 import { PaymentStatusChip } from 'components/sections/billing/BillingChips';
 import PaymentDetailDialog from 'components/sections/billing/PaymentDetailDialog';
 import RefundDialog from 'components/sections/billing/RefundDialog';
+import RecordOfflinePaymentButton from 'components/sections/billing/RecordOfflinePaymentButton';
+import SourceChip from 'components/sections/billing/SourceChip';
 
 const statusOptions = Object.entries(paymentStatusLabel).map(([value, label]) => ({
   value,
@@ -90,6 +92,11 @@ const PaymentList = () => {
           { label: 'Billing' },
           { label: 'Payments', active: true },
         ]}
+        actionComponent={
+          hasPermission('billing.record_payment') ? (
+            <RecordOfflinePaymentButton onRecorded={() => void load()} />
+          ) : undefined
+        }
       />
 
       <Paper sx={{ flex: 1, p: { xs: 3, md: 5 } }}>
@@ -104,7 +111,7 @@ const PaymentList = () => {
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
             <SearchField
               value={search}
-              placeholder="Search school or Razorpay payment id"
+              placeholder="Search school, Razorpay payment id or reference"
               onChange={setSearch}
             />
             <FilterSelect
@@ -124,7 +131,8 @@ const PaymentList = () => {
                   <TableCell>Status</TableCell>
                   <TableCell>Method</TableCell>
                   <TableCell>Date</TableCell>
-                  <TableCell>Razorpay payment id</TableCell>
+                  <TableCell>Source</TableCell>
+                  <TableCell>Payment id / reference</TableCell>
                   <TableCell align="right" />
                 </TableRow>
               </TableHead>
@@ -167,8 +175,11 @@ const PaymentList = () => {
                     </TableCell>
                     <TableCell>{row.method ?? '-'}</TableCell>
                     <TableCell>{formatDateTime(row.paidAt ?? row.createdAt)}</TableCell>
+                    <TableCell>
+                      <SourceChip source={row.source} />
+                    </TableCell>
                     <TableCell onClick={(e) => e.stopPropagation()}>
-                      <CopyText value={row.razorpayPaymentId} />
+                      <CopyText value={row.source === 2 ? row.reference : row.razorpayPaymentId} />
                     </TableCell>
                     <RowActionsCell
                       actions={[
@@ -183,7 +194,7 @@ const PaymentList = () => {
                   </TableRow>
                 ))}
                 {!loading && rows.length === 0 && (
-                  <TableEmptyRow colSpan={7} message="No payments found." />
+                  <TableEmptyRow colSpan={8} message="No payments found." />
                 )}
               </TableBody>
             </Table>
