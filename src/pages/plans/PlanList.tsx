@@ -30,6 +30,7 @@ import RowActionsCell from 'components/common/RowActionsCell';
 import SearchField from 'components/common/SearchField';
 import TableEmptyRow from 'components/common/TableEmptyRow';
 import TablePager from 'components/common/TablePager';
+import GatewayChip from 'components/sections/plans/GatewayChip';
 import PlanStatusChip from 'components/sections/plans/PlanStatusChip';
 
 type PendingAction = { type: 'publish' | 'archive' | 'delete'; plan: Plan } | null;
@@ -119,6 +120,18 @@ const PlanList = () => {
     setWorking(false);
   };
 
+  const handleSync = async (plan: Plan) => {
+    setError('');
+    try {
+      await planService.syncGateway(plan.uuid);
+      setNotice(`Plan "${plan.name}" is now on Razorpay.`);
+      await load();
+    } catch (err) {
+      const info = parseApiError(err);
+      setError(info.fields.plan ?? info.message);
+    }
+  };
+
   const handleDuplicate = async (plan: Plan) => {
     setError('');
     try {
@@ -185,8 +198,9 @@ const PlanList = () => {
                 <TableRow>
                   <TableCell>Plan</TableCell>
                   <TableCell>Price</TableCell>
-                  <TableCell>Modules</TableCell>
+                  <TableCell>Features</TableCell>
                   <TableCell>Status</TableCell>
+                  <TableCell>Razorpay</TableCell>
                   <TableCell align="right" />
                 </TableRow>
               </TableHead>
@@ -219,9 +233,16 @@ const PlanList = () => {
                     <TableCell>
                       {formatRupees(plan.pricePaise)} / {intervalLabel(plan.billingInterval)}
                     </TableCell>
-                    <TableCell>{plan.modules.length}</TableCell>
+                    <TableCell>
+                      {plan.features.length === 1
+                        ? '1 feature'
+                        : `${plan.features.length} features`}
+                    </TableCell>
                     <TableCell>
                       <PlanStatusChip status={plan.status} />
+                    </TableCell>
+                    <TableCell>
+                      <GatewayChip plan={plan} />
                     </TableCell>
                     <RowActionsCell
                       actions={[
@@ -234,6 +255,11 @@ const PlanList = () => {
                           label: 'Publish',
                           visible: canPublish && plan.status === 1,
                           onClick: () => setPending({ type: 'publish', plan }),
+                        },
+                        {
+                          label: 'Sync to Razorpay',
+                          visible: canPublish && plan.status === 2 && !plan.gatewaySynced,
+                          onClick: () => void handleSync(plan),
                         },
                         {
                           label: 'Duplicate',
@@ -256,7 +282,7 @@ const PlanList = () => {
                   </TableRow>
                 ))}
                 {!loading && plans.length === 0 && (
-                  <TableEmptyRow colSpan={5} message="No plans found." />
+                  <TableEmptyRow colSpan={6} message="No plans found." />
                 )}
               </TableBody>
             </Table>

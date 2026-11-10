@@ -16,6 +16,7 @@ const SchoolList = lazy(() => import('pages/schools/SchoolList'));
 const SchoolNew = lazy(() => import('pages/schools/SchoolNew'));
 const SchoolDetail = lazy(() => import('pages/schools/SchoolDetail'));
 const InquiryList = lazy(() => import('pages/inquiries/InquiryList'));
+const SubscriptionList = lazy(() => import('pages/subscriptions/SubscriptionList'));
 const Starter = lazy(() => import('pages/others/Starter'));
 const PlanList = lazy(() => import('pages/plans/PlanList'));
 const PlanForm = lazy(() => import('pages/plans/PlanForm'));
@@ -68,7 +69,10 @@ export const routes: RouteObject[] = [
                 element: <RequirePermission permission="audit.view" />,
                 children: [{ path: paths.auditLogs, element: <AuditLogs /> }],
               },
-              { path: paths.users, element: <UserList /> },
+              {
+                element: <RequirePermission permission="subscriptions.view" />,
+                children: [{ path: paths.subscriptions, element: <SubscriptionList /> }],
+              },
               { path: paths.schools, element: <SchoolList /> },
               { path: paths.schoolNew, element: <SchoolNew /> },
               { path: paths.schoolDetail, element: <SchoolDetail /> },

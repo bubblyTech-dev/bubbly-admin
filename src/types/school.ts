@@ -24,6 +24,7 @@ export interface School {
   gstNumber: string | null;
   logo: string | null; // full link, ready to use in <img>
   timezone: string | null;
+  razorpayCustomerId: string | null; // set the first time a subscription is created
   createdAt: string;
   updatedAt: string;
 }

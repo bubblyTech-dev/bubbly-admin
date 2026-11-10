@@ -70,7 +70,7 @@ Absolute imports are enabled (for example `import paths from 'routes/paths'`).
 - Menu items carry an optional `permission` in `routes/sitemap.ts`; items the admin lacks are hidden. `RequirePermission` in `routes/guards.tsx` shows a "no access" page. The backend enforces the same permissions.
 - Needs the backend migration `20261025000107-create-audit-logs-table.js` (run `npm run migration` in the backend).
 ## Plans and modules
-- `/plans`: list with search and status filter; actions edit, publish, duplicate, archive and delete (drafts only). `/plans/new` and `/plans/:uuid` is the form: details, price (entered in rupees, stored in paise), billing interval, GST, limits (each with an Unlimited switch) and the module checklist (core modules are always included).
+- `/plans`: list with search and status filter; actions edit, publish, duplicate, archive and delete (drafts only). `/plans/new` and `/plans/:uuid` is the form: details, price (entered in rupees, stored in paise), billing interval, GST, limits (each with an Unlimited switch) and a **Features** list. Features are short text lines for the pricing page: **Add feature** opens a popup, each line can be edited, moved or deleted, and the whole list is saved with the plan. They stay editable on a published plan. Modules are no longer picked in this form (core modules are added by the server).
 - A published plan keeps its price, interval, tax setting and link name; the form shows them locked. To change a price, use Duplicate to create a new draft version.
 - `/modules`: list of modules with an edit dialog (name, description, order, active; core modules stay active).
 - The API calls live in `src/services/planService.ts` and `moduleService.ts`; the limit keys and billing intervals come from `GET /admin/plans/options`, so nothing is hard-coded here.
@@ -129,3 +129,10 @@ Other libraries (React, MUI, Emotion, ECharts, Iconify and others) are open sour
 
 ## Inquiries (support inbox)
 `/inquiries` lists messages from the public contact, demo and pricing forms: status chips with counts, search, source filter and "assigned to me". Clicking a row opens a drawer with the message, status, assignee, internal notes and delete (Resolved or Spam only). The sidebar item shows the number of New inquiries and needs `inquiries.view`; changing things needs `inquiries.manage`. Code: `pages/inquiries`, `components/sections/inquiries`, `services/inquiryService.ts`, `types/inquiries.ts`.
+
+## Subscriptions and Razorpay
+
+- **Plans** show a Synced or Not synced chip with the Razorpay plan id. A plan is created on Razorpay once, when it is published; staff with the publish permission can retry with Sync to Razorpay (row menu or the plan form). The plan form warns when the price is above the automatic charge limit set in Settings, Billing & Tax.
+- **Subscriptions** (Management menu) lists every school subscription with its status, amount, next charge and Razorpay id (copy button). The row menu can show the full details, refresh one subscription from Razorpay, or cancel it at the end of the period.
+- **School detail, Subscription tab:** lists that school's subscriptions and adds a new one from a published plan that exists on Razorpay. A new subscription is Pending; share the payment link with the school. It becomes Active only after Razorpay confirms the first payment (webhook, built later).
+

@@ -1,10 +1,8 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router';
 import {
   Alert,
-  Box,
   Button,
-  Checkbox,
   Divider,
   FormControlLabel,
   MenuItem,
@@ -19,11 +17,12 @@ import { parseApiError } from 'lib/api';
 import { paiseToRupees, rupeesToPaise } from 'lib/money';
 import { useAuth } from 'providers/AuthProvider';
 import paths from 'routes/paths';
-import { moduleService } from 'services/moduleService';
 import { planService } from 'services/planService';
-import { Plan, PlanInput, PlanModule, PlanOptions } from 'types/plans';
+import { Plan, PlanInput, PlanOptions } from 'types/plans';
 import ConfirmDialog from 'components/common/ConfirmDialog';
 import PageHeader from 'components/common/PageHeader';
+import GatewayChip from 'components/sections/plans/GatewayChip';
+import PlanFeatures from 'components/sections/plans/PlanFeatures';
 import PlanStatusChip from 'components/sections/plans/PlanStatusChip';
 
 interface LimitField {
@@ -46,7 +45,6 @@ const PlanForm = () => {
 
   const [plan, setPlan] = useState<Plan | null>(null);
   const [options, setOptions] = useState<PlanOptions | null>(null);
-  const [allModules, setAllModules] = useState<PlanModule[]>([]);
   const [loading, setLoading] = useState(true);
 
   const [name, setName] = useState('');
@@ -59,7 +57,7 @@ const PlanForm = () => {
   const [isFeatured, setIsFeatured] = useState(false);
   const [sortOrder, setSortOrder] = useState('0');
   const [limits, setLimits] = useState<Record<string, LimitField>>({});
-  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [features, setFeatures] = useState<string[]>([]);
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -69,8 +67,9 @@ const PlanForm = () => {
   );
   const [pending, setPending] = useState<'publish' | 'archive' | null>(null);
   const [working, setWorking] = useState(false);
+  const [syncing, setSyncing] = useState(false);
 
-  const fill = (source: Plan, available: PlanModule[]) => {
+  const fill = (source: Plan) => {
     setPlan(source);
     setName(source.name);
     setSlug(source.slug);
@@ -89,9 +88,7 @@ const PlanForm = () => {
         ]),
       ),
     );
-    const chosen = new Set(source.modules.map((module) => module.uuid));
-    available.filter((module) => module.isCore).forEach((module) => chosen.add(module.uuid));
-    setSelected(chosen);
+    setFeatures(source.features.map((feature) => feature.title));
   };
 
   useEffect(() => {
@@ -99,26 +96,18 @@ const PlanForm = () => {
 
     const start = async () => {
       try {
-        const [loadedOptions, modules] = await Promise.all([
-          planService.options(),
-          moduleService.list(),
-        ]);
-        const usable = modules.filter((module) => module.status === 1);
+        const loadedOptions = await planService.options();
         if (!active) return;
 
         setOptions(loadedOptions);
-        setAllModules(usable);
 
         if (uuid) {
-          fill(await planService.get(uuid), usable);
+          fill(await planService.get(uuid));
         } else {
           setLimits(
             Object.fromEntries(
               loadedOptions.limits.map((limit) => [limit.key, { unlimited: true, value: '' }]),
             ),
-          );
-          setSelected(
-            new Set(usable.filter((module) => module.isCore).map((module) => module.uuid)),
           );
         }
       } catch (err) {
@@ -138,28 +127,12 @@ const PlanForm = () => {
   const canSave = isNew ? hasPermission('plans.create') : hasPermission('plans.edit');
   const readOnly = archived || !canSave;
   const lockedPrice = readOnly || published;
-
-  const optionalModules = useMemo(
-    () => allModules.filter((module) => !module.isCore),
-    [allModules],
-  );
-  const allOptionalSelected =
-    optionalModules.length > 0 && optionalModules.every((module) => selected.has(module.uuid));
-
-  const toggleModule = (moduleUuid: string) => {
-    const next = new Set(selected);
-    if (next.has(moduleUuid)) next.delete(moduleUuid);
-    else next.add(moduleUuid);
-    setSelected(next);
-  };
-
-  const toggleAll = () => {
-    const next = new Set(selected);
-    optionalModules.forEach((module) =>
-      allOptionalSelected ? next.delete(module.uuid) : next.add(module.uuid),
-    );
-    setSelected(next);
-  };
+  const priceInPaise = rupeesToPaise(priceText);
+  const overAutoChargeLimit =
+    options !== null &&
+    priceInPaise !== null &&
+    options.maxAutoChargeRupees > 0 &&
+    priceInPaise > options.maxAutoChargeRupees * 100;
 
   const handleSave = async () => {
     setError('');
@@ -191,7 +164,7 @@ const PlanForm = () => {
       isFeatured,
       sortOrder: Number(sortOrder) || 0,
       limits: limitValues,
-      modules: [...selected],
+      features,
     };
     // a published plan keeps these; the server would refuse a change
     if (!published) {
@@ -211,7 +184,7 @@ const PlanForm = () => {
         });
         return;
       }
-      fill(await planService.update(uuid, payload), allModules);
+      fill(await planService.update(uuid, payload));
       setNotice('Plan saved.');
     } catch (err) {
       const info = parseApiError(err);
@@ -230,7 +203,6 @@ const PlanForm = () => {
         pending === 'publish'
           ? await planService.publish(plan.uuid)
           : await planService.archive(plan.uuid),
-        allModules,
       );
       setNotice(pending === 'publish' ? 'Plan published.' : 'Plan archived.');
     } catch (err) {
@@ -239,6 +211,20 @@ const PlanForm = () => {
     }
     setPending(null);
     setWorking(false);
+  };
+
+  const handleSync = async () => {
+    if (!plan) return;
+    setSyncing(true);
+    setError('');
+    try {
+      fill(await planService.syncGateway(plan.uuid));
+      setNotice('The plan is now on Razorpay.');
+    } catch (err) {
+      const info = parseApiError(err);
+      setError(info.fields.plan ?? info.message);
+    }
+    setSyncing(false);
   };
 
   const handleDuplicate = async () => {
@@ -388,6 +374,14 @@ const PlanForm = () => {
 
           <Stack direction="column" spacing={3}>
             <Typography variant="h6">Price</Typography>
+            {overAutoChargeLimit && options && (
+              <Alert severity="warning">
+                Banks limit automatic debit (UPI AutoPay and cards) to about ₹
+                {options.maxAutoChargeRupees.toLocaleString('en-IN')} per charge without extra
+                authentication. A price above that may not be charged automatically each period.
+                Confirm the current limit with Razorpay.
+              </Alert>
+            )}
             <Grid container spacing={3}>
               <Grid size={{ xs: 12, sm: 4 }}>
                 <TextField
@@ -432,6 +426,32 @@ const PlanForm = () => {
               </Grid>
             </Grid>
           </Stack>
+
+          {plan && plan.status !== 1 && (
+            <>
+              <Divider />
+              <Stack direction="column" spacing={2}>
+                <Typography variant="h6">Razorpay</Typography>
+                <Stack direction="row" spacing={2} sx={{ alignItems: 'center', flexWrap: 'wrap' }}>
+                  <GatewayChip plan={plan} />
+                  {!plan.gatewaySynced && plan.status === 2 && hasPermission('plans.publish') && (
+                    <Button
+                      variant="soft"
+                      color="neutral"
+                      onClick={() => void handleSync()}
+                      disabled={syncing}
+                    >
+                      {syncing ? 'Syncing…' : 'Sync to Razorpay'}
+                    </Button>
+                  )}
+                </Stack>
+                <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                  A plan is created on Razorpay once, when it is published. Razorpay plans cannot be
+                  edited, which is why a published plan's price is locked.
+                </Typography>
+              </Stack>
+            </>
+          )}
 
           <Divider />
 
@@ -480,51 +500,12 @@ const PlanForm = () => {
 
           <Divider />
 
-          <Stack direction="column" spacing={2}>
-            <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
-              <Typography variant="h6">Modules</Typography>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={allOptionalSelected}
-                    disabled={readOnly || loading}
-                    onChange={toggleAll}
-                  />
-                }
-                label="Select all"
-              />
-            </Stack>
-            {fields.modules && <Alert severity="error">{fields.modules}</Alert>}
-            <Grid container>
-              {allModules.map((module) => (
-                <Grid key={module.uuid} size={{ xs: 12, sm: 6 }}>
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={selected.has(module.uuid)}
-                        disabled={readOnly || loading || module.isCore}
-                        onChange={() => toggleModule(module.uuid)}
-                      />
-                    }
-                    label={
-                      <Box>
-                        <Typography variant="body2">
-                          {module.name}
-                          {module.isCore ? ' (always included)' : ''}
-                        </Typography>
-                        {module.description && (
-                          <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                            {module.description}
-                          </Typography>
-                        )}
-                      </Box>
-                    }
-                    sx={{ alignItems: 'flex-start', py: 0.5 }}
-                  />
-                </Grid>
-              ))}
-            </Grid>
-          </Stack>
+          <PlanFeatures
+            features={features}
+            onChange={setFeatures}
+            readOnly={readOnly || loading}
+            error={fields.features}
+          />
 
           {!readOnly && (
             <Stack direction="row" spacing={2}>

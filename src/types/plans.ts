@@ -14,6 +14,11 @@ export interface PlanModule {
 // limit key -> value; null means unlimited
 export type PlanLimits = Record<string, number | null>;
 
+export interface PlanFeature {
+  uuid: string;
+  title: string;
+}
+
 export interface Plan {
   uuid: string;
   name: string;
@@ -27,10 +32,14 @@ export interface Plan {
   sortOrder: number;
   isFeatured: boolean;
   version: number;
+  razorpayPlanId: string | null;
+  gatewaySynced: boolean;
+  razorpaySyncedAt: string | null;
   publishedAt: string | null;
   archivedAt: string | null;
   createdAt: string;
   limits: PlanLimits;
+  features: PlanFeature[];
   modules: PlanModule[];
   inUse: number;
 }
@@ -38,6 +47,8 @@ export interface Plan {
 export interface PlanOptions {
   limits: { key: string; label: string }[];
   intervals: { value: number; label: string }[];
+  // banks limit automatic debit to about this many rupees per charge (a note, not a rule)
+  maxAutoChargeRupees: number;
 }
 
 export interface PageMeta {
@@ -65,7 +76,8 @@ export interface PlanInput {
   isFeatured?: boolean;
   sortOrder?: number;
   limits?: PlanLimits;
-  modules?: string[];
+  // the whole list, in order (an empty list clears it)
+  features?: string[];
 }
 
 export interface ModuleInput {

@@ -32,6 +32,12 @@ export const planService = {
     return res.data.data.plan;
   },
 
+  // creates a published plan on Razorpay (does nothing if it is already there)
+  async syncGateway(uuid: string): Promise<Plan> {
+    const res = await api.post(`/admin/plans/${uuid}/sync-gateway`);
+    return res.data.data.plan;
+  },
+
   async archive(uuid: string): Promise<Plan> {
     const res = await api.post(`/admin/plans/${uuid}/archive`);
     return res.data.data.plan;

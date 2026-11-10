@@ -55,6 +55,14 @@ const sitemap: MenuItem[] = [
             active: true,
           },
           {
+            name: 'Subscriptions',
+            path: paths.subscriptions,
+            pathName: 'subscriptions',
+            icon: 'material-symbols:payments-outline-rounded',
+            permission: 'subscriptions.view',
+            active: true,
+          },
+          {
             name: 'Plans',
             path: paths.plans,
             pathName: 'plans',
