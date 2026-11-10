@@ -39,6 +39,10 @@ export interface Payment {
   feePaise: number | null;
   taxPaise: number | null;
   refundedPaise: number;
+  // what can still be refunded (0 unless the payment is paid or partly refunded)
+  refundablePaise: number;
+  // recorded by staff (no Razorpay payment id): a refund of it is only recorded
+  offline: boolean;
   failureCode: string | null;
   failureReason: string | null;
   paidAt: string | null;

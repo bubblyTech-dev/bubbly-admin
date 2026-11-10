@@ -16,6 +16,7 @@ import useDebouncedValue from 'hooks/useDebouncedValue';
 import { parseApiError } from 'lib/api';
 import { formatDateTime } from 'lib/format';
 import { formatRupees } from 'lib/money';
+import { useAuth } from 'providers/AuthProvider';
 import paths, { schoolPath } from 'routes/paths';
 import { billingService } from 'services/billingService';
 import { Payment, paymentStatusLabel } from 'types/billing';
@@ -29,6 +30,7 @@ import TableEmptyRow from 'components/common/TableEmptyRow';
 import TablePager from 'components/common/TablePager';
 import { PaymentStatusChip } from 'components/sections/billing/BillingChips';
 import PaymentDetailDialog from 'components/sections/billing/PaymentDetailDialog';
+import RefundDialog from 'components/sections/billing/RefundDialog';
 
 const statusOptions = Object.entries(paymentStatusLabel).map(([value, label]) => ({
   value,
@@ -36,6 +38,7 @@ const statusOptions = Object.entries(paymentStatusLabel).map(([value, label]) =>
 }));
 
 const PaymentList = () => {
+  const { hasPermission } = useAuth();
   const [rows, setRows] = useState<Payment[]>([]);
   const [meta, setMeta] = useState<PageMeta>({ page: 1, perPage: 15, total: 0, lastPage: 1 });
   const [search, setSearch] = useState('');
@@ -44,6 +47,10 @@ const PaymentList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [viewing, setViewing] = useState<string | null>(null);
+  const [refunding, setRefunding] = useState<Payment | null>(null);
+  const [notice, setNotice] = useState<{ severity: 'success' | 'warning'; text: string } | null>(
+    null,
+  );
 
   const debouncedSearch = useDebouncedValue(search);
 
@@ -88,6 +95,11 @@ const PaymentList = () => {
       <Paper sx={{ flex: 1, p: { xs: 3, md: 5 } }}>
         <Stack direction="column" spacing={3}>
           {error && <Alert severity="error">{error}</Alert>}
+          {notice && (
+            <Alert severity={notice.severity} onClose={() => setNotice(null)}>
+              {notice.text}
+            </Alert>
+          )}
 
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
             <SearchField
@@ -139,7 +151,17 @@ const PaymentList = () => {
                         '-'
                       )}
                     </TableCell>
-                    <TableCell>{formatRupees(row.amountPaise)}</TableCell>
+                    <TableCell>
+                      {formatRupees(row.amountPaise)}
+                      {row.refundedPaise > 0 && (
+                        <Typography
+                          variant="caption"
+                          sx={{ display: 'block', color: 'text.secondary' }}
+                        >
+                          {formatRupees(row.refundedPaise)} refunded
+                        </Typography>
+                      )}
+                    </TableCell>
                     <TableCell>
                       <PaymentStatusChip status={row.status} />
                     </TableCell>
@@ -149,7 +171,14 @@ const PaymentList = () => {
                       <CopyText value={row.razorpayPaymentId} />
                     </TableCell>
                     <RowActionsCell
-                      actions={[{ label: 'View', onClick: () => setViewing(row.uuid) }]}
+                      actions={[
+                        { label: 'View', onClick: () => setViewing(row.uuid) },
+                        {
+                          label: 'Refund',
+                          onClick: () => setRefunding(row),
+                          visible: hasPermission('billing.refund') && row.refundablePaise > 0,
+                        },
+                      ]}
                     />
                   </TableRow>
                 ))}
@@ -170,6 +199,23 @@ const PaymentList = () => {
       </Paper>
 
       <PaymentDetailDialog uuid={viewing} onClose={() => setViewing(null)} />
+
+      <RefundDialog
+        payment={refunding}
+        onClose={() => setRefunding(null)}
+        onRefunded={(payment, warning) => {
+          setRefunding(null);
+          setNotice(
+            warning
+              ? { severity: 'warning', text: warning }
+              : {
+                  severity: 'success',
+                  text: `Refund recorded for ${payment.client?.name ?? 'the school'}.`,
+                },
+          );
+          void load();
+        }}
+      />
     </Stack>
   );
 };

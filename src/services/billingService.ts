@@ -30,6 +30,28 @@ export const billingService = {
     return res.data.data.invoice;
   },
 
+  // the invoice as a PDF file (the server makes it on the first download)
+  async downloadInvoicePdf(uuid: string): Promise<Blob> {
+    const res = await api.get(`/admin/invoices/${uuid}/pdf`, { responseType: 'blob' });
+    return res.data;
+  },
+
+  // the reasons an admin can pick when refunding (set in Settings)
+  async refundReasons(): Promise<string[]> {
+    const res = await api.get('/admin/payments/refund-options');
+    return res.data.data.reasons;
+  },
+
+  // amountPaise left out refunds the whole refundable balance. `warning` explains a step that could not be done
+  // (for example the subscription could not be cancelled) while the refund itself went through.
+  async refundPayment(
+    uuid: string,
+    input: { amountPaise?: number; reason: string; note?: string; cancelSubscription?: boolean },
+  ): Promise<{ payment: Payment; warning: string | null }> {
+    const res = await api.post(`/admin/payments/${uuid}/refund`, input);
+    return { payment: res.data.data.payment, warning: res.data.data.warning };
+  },
+
   async listEvents(query: WebhookEventListQuery): Promise<Paged<WebhookEvent>> {
     const res = await api.get('/admin/webhook-events', { params: query });
     return { items: res.data.data, meta: res.data.meta };

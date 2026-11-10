@@ -13,9 +13,11 @@ import {
   Typography,
 } from '@mui/material';
 import useDebouncedValue from 'hooks/useDebouncedValue';
+import useInvoicePdf from 'hooks/useInvoicePdf';
 import { parseApiError } from 'lib/api';
 import { formatDate } from 'lib/format';
 import { formatRupees } from 'lib/money';
+import { useAuth } from 'providers/AuthProvider';
 import paths, { schoolPath } from 'routes/paths';
 import { billingService } from 'services/billingService';
 import { Invoice, invoiceStatusLabel } from 'types/billing';
@@ -36,6 +38,8 @@ const statusOptions = Object.entries(invoiceStatusLabel).map(([value, label]) =>
 }));
 
 const InvoiceList = () => {
+  const { hasPermission } = useAuth();
+  const pdf = useInvoicePdf();
   const [rows, setRows] = useState<Invoice[]>([]);
   const [meta, setMeta] = useState<PageMeta>({ page: 1, perPage: 15, total: 0, lastPage: 1 });
   const [search, setSearch] = useState('');
@@ -88,6 +92,11 @@ const InvoiceList = () => {
       <Paper sx={{ flex: 1, p: { xs: 3, md: 5 } }}>
         <Stack direction="column" spacing={3}>
           {error && <Alert severity="error">{error}</Alert>}
+          {pdf.error && (
+            <Alert severity="error" onClose={pdf.clearError}>
+              {pdf.error}
+            </Alert>
+          )}
 
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
             <SearchField
@@ -151,7 +160,15 @@ const InvoiceList = () => {
                       <InvoiceStatusChip status={row.status} />
                     </TableCell>
                     <RowActionsCell
-                      actions={[{ label: 'View', onClick: () => setViewing(row.uuid) }]}
+                      actions={[
+                        { label: 'View', onClick: () => setViewing(row.uuid) },
+                        {
+                          label: pdf.busy === row.uuid ? 'Preparing PDF…' : 'Download PDF',
+                          onClick: () => void pdf.download(row.uuid, row.invoiceNo),
+                          visible: hasPermission('billing.invoices_download'),
+                          disabled: pdf.busy !== null,
+                        },
+                      ]}
                     />
                   </TableRow>
                 ))}

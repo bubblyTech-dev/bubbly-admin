@@ -138,6 +138,9 @@ Other libraries (React, MUI, Emotion, ECharts, Iconify and others) are open sour
 
 ## Billing (Subscriptions, Payments, Invoices, Webhook events)
 
+- **Invoice PDF:** the invoice row menu and the invoice dialog have **Download PDF** (needs `billing.invoices_download`). The server makes the PDF on the first download and reuses it.
+- **Refund:** the payment row menu has **Refund** (needs `billing.refund`, shown while something can still be refunded). The dialog shows the paid, refunded and refundable amounts, takes an amount (partial allowed), a reason from the list in Settings and an optional note, and has an unticked checkbox to also cancel the subscription at the end of the period. A second step confirms before the refund is made. A refund of a payment recorded by staff is only recorded.
+
 - The **Billing** menu group holds four pages. **Subscriptions** moved here from Management; **Payments** lists every payment Razorpay reported (status, method, amount, Razorpay payment id with a copy button, a detail dialog with every id, the refund total and the object Razorpay sent); **Invoices** lists our GST invoices (subtotal, GST, total) with a detail dialog showing seller, buyer and the tax split; **Webhook events** shows every call Razorpay made to the payment webhook with its status, attempts and error, a dialog with the exact payload, and a "Process again" action for failed events (needs the `subscriptions.manage` permission).
 - The pages need `billing.view` (Subscriptions needs `subscriptions.view`); the backend enforces the same permissions.
 - Services in `src/services/billingService.ts`, types in `src/types/billing.ts`, pages in `src/pages/billing/`, dialogs and chips in `src/components/sections/billing/`.

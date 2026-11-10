@@ -79,6 +79,19 @@ const PaymentDetailDialog = ({ uuid, onClose }: PaymentDetailDialogProps) => {
               <Grid size={{ xs: 12, sm: 6 }}>
                 <DetailField label="Refunded">{formatRupees(payment.refundedPaise)}</DetailField>
               </Grid>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <DetailField label="Can still be refunded">
+                  {formatRupees(payment.refundablePaise)}
+                </DetailField>
+              </Grid>
+              {payment.offline && (
+                <Grid size={12}>
+                  <Alert severity="info">
+                    Recorded by staff. A refund of this payment is only recorded, no money moves
+                    through Razorpay.
+                  </Alert>
+                </Grid>
+              )}
               {payment.failureReason && (
                 <Grid size={12}>
                   <DetailField label="Why it failed">
