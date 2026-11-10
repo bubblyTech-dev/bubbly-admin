@@ -69,6 +69,12 @@ const SchoolSubscriptions = ({ schoolUuid, schoolName }: SchoolSubscriptionsProp
   const isFinished = (row: Subscription) =>
     [SUBSCRIPTION_STATUS.CANCELLED, SUBSCRIPTION_STATUS.EXPIRED].includes(row.status as 4 | 5);
   const hasOpen = rows.some((row) => !isFinished(row));
+  // a subscription that is running now (paid, or overdue) and has not been set to end yet
+  const isRunning = (row: Subscription) =>
+    [SUBSCRIPTION_STATUS.ACTIVE, SUBSCRIPTION_STATUS.PAST_DUE].includes(row.status as 2 | 3);
+  const running = rows.find((row) => isRunning(row) && !row.cancelAtCycleEnd);
+  const ending = rows.find((row) => !isFinished(row) && row.cancelAtCycleEnd);
+  const endDate = (row: Subscription) => formatDate(row.currentPeriodEnd ?? row.nextChargeAt);
 
   return (
     <Stack direction="column" spacing={3}>
@@ -98,6 +104,34 @@ const SchoolSubscriptions = ({ schoolUuid, schoolName }: SchoolSubscriptionsProp
         <Alert severity="success" onClose={() => setNotice('')}>
           {notice}
         </Alert>
+      )}
+
+      {ending && (
+        <Alert severity="info">
+          This subscription ends on {endDate(ending)}. The school keeps access until then and is not
+          charged again.
+        </Alert>
+      )}
+
+      {running && canManage && (
+        <Paper variant="outlined" sx={{ p: 3 }}>
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            spacing={2}
+            sx={{ alignItems: { sm: 'center' }, justifyContent: 'space-between' }}
+          >
+            <div>
+              <Typography variant="subtitle1">Stop renewing this subscription</Typography>
+              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                The current period ends on {endDate(running)}. After that the school is not charged
+                again.
+              </Typography>
+            </div>
+            <Button variant="soft" color="error" onClick={() => actions.askCancel(running)}>
+              Cancel at period end
+            </Button>
+          </Stack>
+        </Paper>
       )}
 
       <Paper variant="outlined">
@@ -179,7 +213,11 @@ const SchoolSubscriptions = ({ schoolUuid, schoolName }: SchoolSubscriptionsProp
       <ConfirmDialog
         open={Boolean(actions.cancelling)}
         title="Cancel this subscription?"
-        message="The school keeps access until the end of the period it has paid for, and is not charged again. A subscription that has not started yet is cancelled immediately."
+        message={
+          actions.cancelling && isRunning(actions.cancelling)
+            ? `The school keeps access until ${endDate(actions.cancelling)} and is not charged again.`
+            : 'The school keeps access until the end of the period it has paid for, and is not charged again. A subscription that has not started yet is cancelled immediately.'
+        }
         confirmLabel="Cancel at period end"
         color="error"
         loading={actions.working}
