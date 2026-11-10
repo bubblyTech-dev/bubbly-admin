@@ -104,6 +104,14 @@ const sitemap: MenuItem[] = [
             active: true,
           },
           {
+            name: 'Renewals',
+            path: paths.renewals,
+            pathName: 'renewals',
+            icon: 'material-symbols:update-rounded',
+            permission: 'renewals.view',
+            active: true,
+          },
+          {
             name: 'Payments',
             path: paths.payments,
             pathName: 'payments',

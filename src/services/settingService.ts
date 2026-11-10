@@ -2,7 +2,7 @@ import api from 'lib/api';
 import { SettingGroup } from 'types/settings';
 
 // The values are sent as typed in the form; the backend checks and converts them (see backend config/settings.js).
-export type SettingValues = Record<string, string | boolean>;
+export type SettingValues = Record<string, string | boolean | string[]>;
 
 export const settingService = {
   async list(): Promise<SettingGroup[]> {

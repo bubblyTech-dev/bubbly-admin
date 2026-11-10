@@ -15,6 +15,7 @@ const paths = {
   schoolNew: `/schools/new`,
   schoolDetail: `/schools/:uuid`,
   subscriptions: `/subscriptions`,
+  renewals: `/renewals`,
   payments: `/payments`,
   invoices: `/invoices`,
   webhookEvents: `/webhook-events`,
