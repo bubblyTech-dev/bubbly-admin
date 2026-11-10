@@ -136,6 +136,11 @@ Other libraries (React, MUI, Emotion, ECharts, Iconify and others) are open sour
 - **Subscriptions** (Management menu) lists every school subscription with its status, amount, next charge and Razorpay id (copy button). The row menu can show the full details, refresh one subscription from Razorpay, or cancel it at the end of the period.
 - **School detail, Subscription tab:** lists that school's subscriptions and adds a new one from a published plan that exists on Razorpay. A new subscription is Pending; share the payment link with the school. It becomes Active only after Razorpay confirms the first payment (webhook, built later).
 
+## Principal tools, notification bell, cancel at period end
+- **School, Overview tab:** a **Principal** card (name, email, "Password set" or "Waiting for first login", last login, link times) with **Resend welcome link** and **Reset password** (both ask first). The new set-password link is shown once in a dialog with a Copy button, because email is not set up yet.
+- **School, Subscription tab:** a **Cancel at period end** button for a running subscription, showing the date it ends on; a notice shows when a subscription is already set to end.
+- **Bell** (top bar): badge with the unread count, a list (new inquiries, failed payments, past due subscriptions) that opens the matching page, **Mark all as read**, refreshed when opened and every minute while the tab is visible. Which sources appear is controlled by the settings `notifications.show_new_inquiries` and `notifications.show_failed_payments`.
+
 ## Billing (Subscriptions, Payments, Invoices, Webhook events)
 
 - **Invoice PDF:** the invoice row menu and the invoice dialog have **Download PDF** (needs `billing.invoices_download`). The server makes the PDF on the first download and reuses it.

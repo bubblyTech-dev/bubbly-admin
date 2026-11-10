@@ -23,6 +23,7 @@ import PageHeader from 'components/common/PageHeader';
 import PageLoader from 'components/loading/PageLoader';
 import SchoolForm from 'components/sections/schools/SchoolForm';
 import SchoolNotes from 'components/sections/schools/SchoolNotes';
+import SchoolPrincipalCard from 'components/sections/schools/SchoolPrincipalCard';
 import SchoolStatusChip from 'components/sections/schools/SchoolStatusChip';
 import SchoolStatusHistory from 'components/sections/schools/SchoolStatusHistory';
 import StatusChangeDialog from 'components/sections/schools/StatusChangeDialog';
@@ -127,7 +128,10 @@ const SchoolDetail = () => {
         </Tabs>
 
         {tab === 'overview' && (
-          <SchoolForm school={school} readOnly={!canEdit} onSaved={setSchool} />
+          <Stack direction="column" spacing={4}>
+            <SchoolPrincipalCard schoolUuid={school.uuid} />
+            <SchoolForm school={school} readOnly={!canEdit} onSaved={setSchool} />
+          </Stack>
         )}
         {tab === 'subscription' && (
           <SchoolSubscriptions schoolUuid={school.uuid} schoolName={school.name} />
