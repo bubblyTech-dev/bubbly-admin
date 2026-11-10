@@ -34,6 +34,7 @@ export const subscriptionStatusColor: Record<
 export interface Subscription {
   uuid: string;
   status: SubscriptionStatus;
+  source: 1 | 2; // 1: Razorpay, 2: Offline (recorded by staff)
   client?: { uuid: string; name: string };
   plan?: { uuid: string; name: string; version: number };
   razorpaySubscriptionId: string | null;

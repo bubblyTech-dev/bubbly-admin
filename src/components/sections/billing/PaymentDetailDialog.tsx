@@ -18,6 +18,7 @@ import { Payment } from 'types/billing';
 import CopyText from 'components/common/CopyText';
 import { PaymentStatusChip } from './BillingChips';
 import DetailField from './DetailField';
+import SourceChip from './SourceChip';
 
 interface PaymentDetailDialogProps {
   uuid: string | null;
@@ -56,7 +57,10 @@ const PaymentDetailDialog = ({ uuid, onClose }: PaymentDetailDialogProps) => {
         {error && <Alert severity="error">{error}</Alert>}
         {payment && (
           <Stack direction="column" spacing={3} sx={{ pt: 1 }}>
-            <PaymentStatusChip status={payment.status} />
+            <Stack direction="row" spacing={1}>
+              <PaymentStatusChip status={payment.status} />
+              <SourceChip source={payment.source} />
+            </Stack>
 
             <Grid container spacing={3}>
               <Grid size={{ xs: 12, sm: 6 }}>
@@ -86,6 +90,21 @@ const PaymentDetailDialog = ({ uuid, onClose }: PaymentDetailDialogProps) => {
                     {payment.failureCode ? ` (${payment.failureCode})` : ''}
                   </DetailField>
                 </Grid>
+              )}
+              {payment.source === 2 && (
+                <>
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <DetailField label="Reference">{payment.reference ?? '-'}</DetailField>
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <DetailField label="Recorded by">{payment.recordedBy ?? '-'}</DetailField>
+                  </Grid>
+                  {payment.notes && (
+                    <Grid size={12}>
+                      <DetailField label="Note">{payment.notes}</DetailField>
+                    </Grid>
+                  )}
+                </>
               )}
               <Grid size={{ xs: 12, sm: 6 }}>
                 <DetailField label="Razorpay payment id">

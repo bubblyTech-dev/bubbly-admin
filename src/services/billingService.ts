@@ -2,6 +2,7 @@ import api from 'lib/api';
 import {
   Invoice,
   ListQuery,
+  OfflinePaymentInput,
   Paged,
   Payment,
   WebhookEvent,
@@ -18,6 +19,20 @@ export const billingService = {
   async getPayment(uuid: string): Promise<Payment> {
     const res = await api.get(`/admin/payments/${uuid}`);
     return res.data.data.payment;
+  },
+
+  // the payment methods staff can choose from (set in Settings)
+  async offlineOptions(): Promise<string[]> {
+    const res = await api.get('/admin/payments/offline-options');
+    return res.data.data.methods;
+  },
+
+  // records money received outside Razorpay; the admin decides how long the school may use the product
+  async recordOffline(
+    input: OfflinePaymentInput,
+  ): Promise<{ payment: Payment; invoice: Invoice | null }> {
+    const res = await api.post('/admin/payments/offline', input);
+    return { payment: res.data.data.payment, invoice: res.data.data.invoice };
   },
 
   async listInvoices(query: ListQuery): Promise<Paged<Invoice>> {

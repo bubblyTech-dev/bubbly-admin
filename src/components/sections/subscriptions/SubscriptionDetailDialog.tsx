@@ -17,6 +17,7 @@ import { formatRupees, intervalLabel } from 'lib/money';
 import { subscriptionService } from 'services/subscriptionService';
 import { Subscription } from 'types/subscriptions';
 import CopyText from 'components/common/CopyText';
+import SourceChip from 'components/sections/billing/SourceChip';
 import SubscriptionStatusChip from './SubscriptionStatusChip';
 
 interface SubscriptionDetailDialogProps {
@@ -67,6 +68,7 @@ const SubscriptionDetailDialog = ({ uuid, onClose }: SubscriptionDetailDialogPro
           <Stack direction="column" spacing={3} sx={{ pt: 1 }}>
             <Stack direction="row" spacing={2} sx={{ alignItems: 'center', flexWrap: 'wrap' }}>
               <SubscriptionStatusChip status={subscription.status} />
+              <SourceChip source={subscription.source} />
               {subscription.cancelAtCycleEnd && (
                 <Typography variant="body2" sx={{ color: 'warning.main' }}>
                   Ends after the current period

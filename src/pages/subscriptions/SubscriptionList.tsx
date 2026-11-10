@@ -30,6 +30,8 @@ import RowActionsCell from 'components/common/RowActionsCell';
 import SearchField from 'components/common/SearchField';
 import TableEmptyRow from 'components/common/TableEmptyRow';
 import TablePager from 'components/common/TablePager';
+import SourceChip from 'components/sections/billing/SourceChip';
+import ChangeExpiryDialog from 'components/sections/subscriptions/ChangeExpiryDialog';
 import SubscriptionDetailDialog from 'components/sections/subscriptions/SubscriptionDetailDialog';
 import SubscriptionStatusChip from 'components/sections/subscriptions/SubscriptionStatusChip';
 import useSubscriptionActions from 'components/sections/subscriptions/useSubscriptionActions';
@@ -52,6 +54,7 @@ const SubscriptionList = () => {
   const [notice, setNotice] = useState('');
   const [viewing, setViewing] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [changingExpiry, setChangingExpiry] = useState<Subscription | null>(null);
 
   const debouncedSearch = useDebouncedValue(search);
 
@@ -88,6 +91,8 @@ const SubscriptionList = () => {
   });
 
   const canManage = hasPermission('subscriptions.manage');
+  const isEnded = (row: Subscription) =>
+    [SUBSCRIPTION_STATUS.CANCELLED, SUBSCRIPTION_STATUS.EXPIRED].includes(row.status as 4 | 5);
   const canCancel = (row: Subscription) =>
     canManage &&
     ![SUBSCRIPTION_STATUS.CANCELLED, SUBSCRIPTION_STATUS.EXPIRED].includes(row.status as 4 | 5) &&
@@ -134,7 +139,8 @@ const SubscriptionList = () => {
                   <TableCell>Plan</TableCell>
                   <TableCell>Status</TableCell>
                   <TableCell>Amount</TableCell>
-                  <TableCell>Next charge</TableCell>
+                  <TableCell>Next charge / valid until</TableCell>
+                  <TableCell>Source</TableCell>
                   <TableCell>Razorpay id</TableCell>
                   <TableCell align="right" />
                 </TableRow>
@@ -179,7 +185,14 @@ const SubscriptionList = () => {
                     <TableCell>
                       {formatRupees(row.amountPaise)} / {intervalLabel(row.billingInterval)}
                     </TableCell>
-                    <TableCell>{formatDate(row.nextChargeAt)}</TableCell>
+                    <TableCell>
+                      {row.source === 2
+                        ? formatDate(row.currentPeriodEnd)
+                        : formatDate(row.nextChargeAt)}
+                    </TableCell>
+                    <TableCell>
+                      <SourceChip source={row.source} />
+                    </TableCell>
                     <TableCell onClick={(e) => e.stopPropagation()}>
                       <CopyText value={row.razorpaySubscriptionId} />
                     </TableCell>
@@ -187,8 +200,13 @@ const SubscriptionList = () => {
                       actions={[
                         { label: 'View', onClick: () => setViewing(row.uuid) },
                         {
+                          label: 'Change expiry date',
+                          visible: canManage && row.source === 2 && !isEnded(row),
+                          onClick: () => setChangingExpiry(row),
+                        },
+                        {
                           label: 'Sync with Razorpay',
-                          visible: canManage,
+                          visible: canManage && row.source !== 2,
                           onClick: () => void actions.sync(row),
                         },
                         {
@@ -202,7 +220,7 @@ const SubscriptionList = () => {
                   </TableRow>
                 ))}
                 {!loading && rows.length === 0 && (
-                  <TableEmptyRow colSpan={7} message="No subscriptions found." />
+                  <TableEmptyRow colSpan={8} message="No subscriptions found." />
                 )}
               </TableBody>
             </Table>
@@ -218,6 +236,15 @@ const SubscriptionList = () => {
       </Paper>
 
       <SubscriptionDetailDialog uuid={viewing} onClose={() => setViewing(null)} />
+
+      <ChangeExpiryDialog
+        subscription={changingExpiry}
+        onClose={() => setChangingExpiry(null)}
+        onChanged={() => {
+          setNotice('Expiry date changed.');
+          setRefreshKey((key) => key + 1);
+        }}
+      />
 
       <ConfirmDialog
         open={Boolean(actions.cancelling)}
