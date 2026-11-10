@@ -11,9 +11,11 @@ import {
   Typography,
 } from '@mui/material';
 import Grid from '@mui/material/Grid';
+import useInvoicePdf from 'hooks/useInvoicePdf';
 import { parseApiError } from 'lib/api';
 import { formatDate, formatDateTime } from 'lib/format';
 import { formatRupees } from 'lib/money';
+import { useAuth } from 'providers/AuthProvider';
 import { billingService } from 'services/billingService';
 import { Invoice, InvoiceParty } from 'types/billing';
 import CopyText from 'components/common/CopyText';
@@ -51,8 +53,16 @@ const AmountRow = ({ label, value, bold }: { label: string; value: string; bold?
 
 // One invoice: who issued it, who it is for, and how the GST is split.
 const InvoiceDetailDialog = ({ uuid, onClose }: InvoiceDetailDialogProps) => {
+  const { hasPermission } = useAuth();
+  const pdf = useInvoicePdf();
   const [invoice, setInvoice] = useState<Invoice | null>(null);
   const [error, setError] = useState('');
+
+  // closing also clears a download error left from this invoice
+  const handleClose = () => {
+    pdf.clearError();
+    onClose();
+  };
 
   useEffect(() => {
     if (!uuid) return undefined;
@@ -75,10 +85,15 @@ const InvoiceDetailDialog = ({ uuid, onClose }: InvoiceDetailDialogProps) => {
   }, [uuid]);
 
   return (
-    <Dialog open={Boolean(uuid)} onClose={onClose} fullWidth maxWidth="md">
+    <Dialog open={Boolean(uuid)} onClose={handleClose} fullWidth maxWidth="md">
       <DialogTitle>Invoice</DialogTitle>
       <DialogContent>
         {error && <Alert severity="error">{error}</Alert>}
+        {pdf.error && (
+          <Alert severity="error" sx={{ mt: error ? 2 : 0 }}>
+            {pdf.error}
+          </Alert>
+        )}
         {invoice && (
           <Stack direction="column" spacing={3} sx={{ pt: 1 }}>
             <Stack direction="row" spacing={2} sx={{ alignItems: 'center', flexWrap: 'wrap' }}>
@@ -124,7 +139,16 @@ const InvoiceDetailDialog = ({ uuid, onClose }: InvoiceDetailDialogProps) => {
         )}
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose}>Close</Button>
+        {invoice && hasPermission('billing.invoices_download') && (
+          <Button
+            variant="contained"
+            disabled={pdf.busy !== null}
+            onClick={() => void pdf.download(invoice.uuid, invoice.invoiceNo)}
+          >
+            {pdf.busy ? 'Preparing PDF…' : 'Download PDF'}
+          </Button>
+        )}
+        <Button onClick={handleClose}>Close</Button>
       </DialogActions>
     </Dialog>
   );
