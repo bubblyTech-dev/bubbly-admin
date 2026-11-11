@@ -30,6 +30,11 @@ const paths = {
   announcements: `/announcements`,
   announcementNew: `/announcements/new`,
 
+  analytics: `/analytics`,
+  analyticsArea: `/analytics/:area`,
+  reports: `/reports`,
+  reportsArea: `/reports/:area`,
+
   404: `/404`,
 };
 
@@ -37,5 +42,9 @@ const paths = {
 export const userPath = (uuid: string) => `/users/${uuid}`;
 // the address of one school, by its uuid
 export const schoolPath = (uuid: string) => `/schools/${uuid}`;
+
+// the address of one Analytics page / one Reports page
+export const analyticsPath = (area: string) => `/analytics/${area}`;
+export const reportsPath = (area: string) => `/reports/${area}`;
 
 export default paths;

@@ -1,6 +1,8 @@
 import { Suspense, lazy } from 'react';
-import { Outlet, RouteObject, createBrowserRouter, useLocation } from 'react-router';
+import { Navigate, Outlet, RouteObject, createBrowserRouter, useLocation } from 'react-router';
 import App from 'App';
+import { analyticsAreas } from 'features/analytics/registry';
+import { reportAreas } from 'features/reports/registry';
 import AuthLayout from 'layouts/auth-layout';
 import MainLayout from 'layouts/main-layout';
 import Page404 from 'pages/errors/Page404';
@@ -21,6 +23,8 @@ const RenewalList = lazy(() => import('pages/renewals/RenewalList'));
 const PaymentList = lazy(() => import('pages/billing/PaymentList'));
 const InvoiceList = lazy(() => import('pages/billing/InvoiceList'));
 const WebhookEventList = lazy(() => import('pages/billing/WebhookEventList'));
+const AnalyticsArea = lazy(() => import('pages/analytics/AnalyticsArea'));
+const ReportArea = lazy(() => import('pages/reports/ReportArea'));
 const Starter = lazy(() => import('pages/others/Starter'));
 const PlanList = lazy(() => import('pages/plans/PlanList'));
 const PlanForm = lazy(() => import('pages/plans/PlanForm'));
@@ -67,6 +71,36 @@ export const routes: RouteObject[] = [
                 children: [
                   { path: paths.users, element: <UserList /> },
                   { path: paths.userDetail, element: <UserDetail /> },
+                ],
+              },
+              {
+                // Analytics and Reports: one generic page each, driven by the area configs
+                element: <RequirePermission permission="reports.view" />,
+                children: [
+                  {
+                    path: paths.analytics,
+                    element: (
+                      <Navigate
+                        to={
+                          analyticsAreas[0]
+                            ? `${paths.analytics}/${analyticsAreas[0].area}`
+                            : paths[404]
+                        }
+                        replace
+                      />
+                    ),
+                  },
+                  { path: paths.analyticsArea, element: <AnalyticsArea /> },
+                  {
+                    path: paths.reports,
+                    element: (
+                      <Navigate
+                        to={reportAreas[0] ? `${paths.reports}/${reportAreas[0].area}` : paths[404]}
+                        replace
+                      />
+                    ),
+                  },
+                  { path: paths.reportsArea, element: <ReportArea /> },
                 ],
               },
               {
