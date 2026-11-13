@@ -3,6 +3,7 @@ import { Link as RouterLink, useLocation, useNavigate } from 'react-router';
 import { Alert, Box, Button, Link, Stack, TextField } from '@mui/material';
 import { parseApiError } from 'lib/api';
 import { useAuth } from 'providers/AuthProvider';
+import { landingPath } from 'routes/landing';
 import paths from 'routes/paths';
 import PasswordTextField from 'components/common/PasswordTextField';
 import AuthCard from './AuthCard';
@@ -26,7 +27,7 @@ const LoginForm = () => {
     try {
       const user = await login(email, password);
       const from = (location.state as { from?: string } | null)?.from;
-      navigate(user.mustChangePassword ? paths.changePassword : (from ?? paths.starter), {
+      navigate(user.mustChangePassword ? paths.changePassword : (from ?? landingPath(user)), {
         replace: true,
       });
     } catch (err) {

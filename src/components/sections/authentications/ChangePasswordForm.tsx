@@ -3,13 +3,14 @@ import { useNavigate } from 'react-router';
 import { Alert, Box, Button, Link, Stack } from '@mui/material';
 import { parseApiError } from 'lib/api';
 import { useAuth } from 'providers/AuthProvider';
+import { landingPath } from 'routes/landing';
 import paths from 'routes/paths';
 import PasswordTextField from 'components/common/PasswordTextField';
 import AuthCard from './AuthCard';
 
 // Shown right after login while the account is flagged "must change password" (first login of a seeded or new admin).
 const ChangePasswordForm = () => {
-  const { changePassword, logout } = useAuth();
+  const { user, changePassword, logout } = useAuth();
   const navigate = useNavigate();
 
   const [currentPassword, setCurrentPassword] = useState('');
@@ -26,7 +27,7 @@ const ChangePasswordForm = () => {
     setSubmitting(true);
     try {
       await changePassword({ currentPassword, newPassword, newPasswordConfirmation: confirmation });
-      navigate(paths.starter, { replace: true });
+      navigate(user ? landingPath(user) : paths.root, { replace: true });
     } catch (err) {
       const info = parseApiError(err);
       setError(info.message);

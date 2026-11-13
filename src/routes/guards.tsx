@@ -3,6 +3,7 @@ import { Navigate, Outlet, useLocation } from 'react-router';
 import NoAccess from 'pages/errors/NoAccess';
 import { useAuth } from 'providers/AuthProvider';
 import PageLoader from 'components/loading/PageLoader';
+import { landingPath } from './landing';
 import paths from './paths';
 
 interface RequireAuthProps {
@@ -25,7 +26,7 @@ export const RequireAuth = ({ allowPendingPasswordChange = false }: RequireAuthP
     return <Navigate to={paths.changePassword} replace />;
   }
   if (!user.mustChangePassword && allowPendingPasswordChange) {
-    return <Navigate to={paths.starter} replace />;
+    return <Navigate to={landingPath(user)} replace />;
   }
   return <Outlet />;
 };
@@ -36,7 +37,9 @@ export const GuestOnly = () => {
 
   if (status === 'loading') return <PageLoader sx={{ minHeight: '100vh' }} />;
   if (status === 'authenticated' && user) {
-    return <Navigate to={user.mustChangePassword ? paths.changePassword : paths.starter} replace />;
+    return (
+      <Navigate to={user.mustChangePassword ? paths.changePassword : landingPath(user)} replace />
+    );
   }
   return <Outlet />;
 };

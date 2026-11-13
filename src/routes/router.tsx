@@ -21,7 +21,6 @@ const RenewalList = lazy(() => import('pages/renewals/RenewalList'));
 const PaymentList = lazy(() => import('pages/billing/PaymentList'));
 const InvoiceList = lazy(() => import('pages/billing/InvoiceList'));
 const WebhookEventList = lazy(() => import('pages/billing/WebhookEventList'));
-const Starter = lazy(() => import('pages/others/Starter'));
 const PlanList = lazy(() => import('pages/plans/PlanList'));
 const PlanForm = lazy(() => import('pages/plans/PlanForm'));
 const ModuleList = lazy(() => import('pages/modules/ModuleList'));
@@ -61,7 +60,10 @@ export const routes: RouteObject[] = [
               </MainLayout>
             ),
             children: [
-              { index: true, element: <Analytics /> },
+              {
+                element: <RequirePermission permission="dashboard.view" />,
+                children: [{ index: true, element: <Analytics /> }],
+              },
               {
                 element: <RequirePermission permission="users_access.view" />,
                 children: [
@@ -89,20 +91,50 @@ export const routes: RouteObject[] = [
                   { path: paths.webhookEvents, element: <WebhookEventList /> },
                 ],
               },
-              { path: paths.schools, element: <SchoolList /> },
-              { path: paths.schoolNew, element: <SchoolNew /> },
-              { path: paths.schoolDetail, element: <SchoolDetail /> },
-              { path: paths.inquiries, element: <InquiryList /> },
+              {
+                element: <RequirePermission permission="schools.view" />,
+                children: [
+                  { path: paths.schools, element: <SchoolList /> },
+                  { path: paths.schoolDetail, element: <SchoolDetail /> },
+                ],
+              },
+              {
+                element: <RequirePermission permission="schools.create" />,
+                children: [{ path: paths.schoolNew, element: <SchoolNew /> }],
+              },
+              {
+                element: <RequirePermission permission="plans.view" />,
+                children: [
+                  { path: paths.plans, element: <PlanList /> },
+                  { path: `${paths.plans}/:uuid`, element: <PlanForm /> },
+                ],
+              },
+              {
+                element: <RequirePermission permission="plans.create" />,
+                children: [{ path: paths.plansNew, element: <PlanForm /> }],
+              },
+              {
+                element: <RequirePermission permission="modules.view" />,
+                children: [{ path: paths.modules, element: <ModuleList /> }],
+              },
+              {
+                element: <RequirePermission permission="inquiries.view" />,
+                children: [{ path: paths.inquiries, element: <InquiryList /> }],
+              },
+              {
+                element: <RequirePermission permission="settings.view" />,
+                children: [{ path: paths.settings, element: <Settings /> }],
+              },
+              {
+                element: <RequirePermission permission="announcements.view" />,
+                children: [
+                  { path: paths.announcements, element: <AnnouncementList /> },
+                  { path: paths.announcementNew, element: <AnnouncementForm /> },
+                  { path: `${paths.announcements}/:uuid`, element: <AnnouncementForm /> },
+                ],
+              },
+              // any signed-in admin may open their own account
               { path: paths.account, element: <Account /> },
-              { path: paths.starter, element: <Starter /> },
-              { path: paths.plans, element: <PlanList /> },
-              { path: paths.plansNew, element: <PlanForm /> },
-              { path: `${paths.plans}/:uuid`, element: <PlanForm /> },
-              { path: paths.modules, element: <ModuleList /> },
-              { path: paths.settings, element: <Settings /> },
-              { path: paths.announcements, element: <AnnouncementList /> },
-              { path: paths.announcementNew, element: <AnnouncementForm /> },
-              { path: `${paths.announcements}/:uuid`, element: <AnnouncementForm /> },
             ],
           },
         ],

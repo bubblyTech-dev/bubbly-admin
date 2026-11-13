@@ -98,7 +98,11 @@ Everything below is built into this app (the free template ships light only, wit
 
 - **Logo:** the Bubbly logo as a vector, `public/assets/images/logo.svg` (traced from the supplied PNG, so it stays sharp at any size and has no background). The collapsed sidebar shows `logo-mark.svg`, the orange "B". Component: `src/components/common/Logo.tsx`. If you get an official vector logo from a designer, replace these two SVG files. The browser-tab icon is `public/assets/images/favicon.png` (transparent).
 - **Login page:** a full-height illustrated panel (`src/components/illustrations/LoginHero.tsx`) with glossy "Bubbly" mascots (one in a graduation cap), 3D toy blocks, a rainbow and floating bubbles. All colours come from the selected theme, so every theme gets its own look. Mascot and block drawing code is in `BubbleMascot.tsx`. Animations respect `prefers-reduced-motion`. On phones the panel is hidden and only the logo shows.
-- **Starter page:** a playground scene (`PlaygroundScene.tsx`). The shared child character is `Kid.tsx`. All illustrations are SVG drawn in code, so they are sharp at any size and need no image files.
+- All illustrations are SVG drawn in code, so they are sharp at any size and need no image files. The old Starter page and its playground scene were removed (the Dashboard is the landing page after login).
+
+## Access and landing page
+
+Every page route is wrapped in `RequirePermission` (see `src/routes/router.tsx`), so an admin without the permission sees a "no access" page instead of the screen. After login (and after the forced password change) an admin lands on the Dashboard; without `dashboard.view` they land on the first sidebar page they may open (`src/routes/landing.ts`), and their own account is the last resort.
 
 ## Changes from the original template
 

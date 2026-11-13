@@ -2,9 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import {
   Alert,
-  Box,
   Button,
-  FormHelperText,
   IconButton,
   MenuItem,
   Paper,
@@ -24,6 +22,7 @@ import {
   ANNOUNCEMENT_TYPE,
   Announcement,
   AnnouncementInput,
+  AnnouncementTargetItem,
   announcementTargetLabels,
   announcementTypeLabels,
 } from 'types/announcements';
@@ -31,6 +30,7 @@ import IconifyIcon from 'components/base/IconifyIcon';
 import PageLoader from 'components/loading/PageLoader';
 import { AnnouncementStatusChip } from 'components/sections/announcements/AnnouncementChips';
 import AnnouncementPreview from 'components/sections/announcements/AnnouncementPreview';
+import AnnouncementTargetPicker from 'components/sections/announcements/AnnouncementTargetPicker';
 
 // New announcement (/announcements/new) and edit (/announcements/:uuid) share this form.
 const AnnouncementForm = () => {
@@ -45,6 +45,7 @@ const AnnouncementForm = () => {
   const [body, setBody] = useState('');
   const [type, setType] = useState<number>(ANNOUNCEMENT_TYPE.INFO);
   const [targetType, setTargetType] = useState<number>(ANNOUNCEMENT_TARGET_TYPE.ALL);
+  const [targets, setTargets] = useState<AnnouncementTargetItem[]>([]);
   const [startsAt, setStartsAt] = useState('');
   const [endsAt, setEndsAt] = useState('');
 
@@ -60,6 +61,7 @@ const AnnouncementForm = () => {
     setBody(data.body);
     setType(data.type);
     setTargetType(data.targetType);
+    setTargets(data.targets ?? []);
     setStartsAt(isoToLocalInput(data.startsAt));
     setEndsAt(isoToLocalInput(data.endsAt));
   };
@@ -88,6 +90,8 @@ const AnnouncementForm = () => {
           body,
           type,
           targetType,
+          targetUuids:
+            targetType === ANNOUNCEMENT_TARGET_TYPE.ALL ? [] : targets.map((item) => item.uuid),
           startsAt: localInputToIso(startsAt),
           endsAt: localInputToIso(endsAt),
         };
@@ -209,32 +213,35 @@ const AnnouncementForm = () => {
               ))}
             </TextField>
 
-            <Box>
-              <TextField
-                select
-                fullWidth
-                label="Audience"
-                value={targetType}
+            <TextField
+              select
+              fullWidth
+              label="Audience"
+              value={targetType}
+              disabled={lockContent}
+              onChange={(e) => {
+                setTargetType(Number(e.target.value));
+                setTargets([]); // the picked schools or plans belong to the old audience
+              }}
+              error={Boolean(fields.targetType)}
+              helperText={fields.targetType}
+            >
+              {Object.entries(announcementTargetLabels).map(([value, label]) => (
+                <MenuItem key={value} value={Number(value)}>
+                  {label}
+                </MenuItem>
+              ))}
+            </TextField>
+
+            {targetType !== ANNOUNCEMENT_TARGET_TYPE.ALL && (
+              <AnnouncementTargetPicker
+                targetType={targetType}
+                value={targets}
+                onChange={setTargets}
                 disabled={lockContent}
-                onChange={(e) => setTargetType(Number(e.target.value))}
-                error={Boolean(fields.targetType || fields.targetUuids)}
-                helperText={fields.targetType || fields.targetUuids}
-              >
-                {Object.entries(announcementTargetLabels).map(([value, label]) => (
-                  <MenuItem
-                    key={value}
-                    value={Number(value)}
-                    disabled={Number(value) !== ANNOUNCEMENT_TARGET_TYPE.ALL}
-                  >
-                    {label}
-                  </MenuItem>
-                ))}
-              </TextField>
-              <FormHelperText sx={{ mx: 1.75 }}>
-                Choosing selected schools or plans is available after Schools and Plans are
-                connected.
-              </FormHelperText>
-            </Box>
+                error={fields.targetUuids}
+              />
+            )}
 
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3}>
               <TextField

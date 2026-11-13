@@ -11,6 +11,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  Tooltip,
   Typography,
 } from '@mui/material';
 import useDebouncedValue from 'hooks/useDebouncedValue';
@@ -21,6 +22,7 @@ import paths from 'routes/paths';
 import { announcementService } from 'services/announcementService';
 import {
   ANNOUNCEMENT_STATUS,
+  ANNOUNCEMENT_TARGET_TYPE,
   Announcement,
   PageMeta,
   announcementStatusLabels,
@@ -196,7 +198,19 @@ const AnnouncementList = () => {
                     <TableCell>
                       <AnnouncementStatusChip status={row.status} />
                     </TableCell>
-                    <TableCell>{announcementTargetLabels[row.targetType]}</TableCell>
+                    <TableCell>
+                      {row.targetType === ANNOUNCEMENT_TARGET_TYPE.ALL ? (
+                        announcementTargetLabels[row.targetType]
+                      ) : (
+                        <Tooltip
+                          title={(row.targets ?? []).map((item) => item.name).join(', ') || 'None'}
+                        >
+                          <span>
+                            {announcementTargetLabels[row.targetType]} ({row.targets?.length ?? 0})
+                          </span>
+                        </Tooltip>
+                      )}
+                    </TableCell>
                     <TableCell>{formatDateTime(row.startsAt)}</TableCell>
                     <TableCell>{row.endsAt ? formatDateTime(row.endsAt) : 'No end'}</TableCell>
                     <RowActionsCell

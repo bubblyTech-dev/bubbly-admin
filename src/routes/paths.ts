@@ -4,7 +4,6 @@ export const rootPaths = {
 
 const paths = {
   root: rootPaths.root,
-  starter: `/starter`,
   users: `/users`,
   userDetail: `/users/:uuid`,
   auditLogs: `/audit-logs`,
