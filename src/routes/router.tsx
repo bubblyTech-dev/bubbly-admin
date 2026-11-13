@@ -10,7 +10,7 @@ import PageLoader from 'components/loading/PageLoader';
 import { GuestOnly, RequireAuth, RequirePermission } from './guards';
 import paths from './paths';
 
-const Analytics = lazy(() => import('pages/dashboard/Analytics'));
+const Dashboard = lazy(() => import('pages/dashboard/Dashboard'));
 const UserList = lazy(() => import('pages/users/UserList'));
 const UserDetail = lazy(() => import('pages/users/UserDetail'));
 const AuditLogs = lazy(() => import('pages/audit/AuditLogs'));
@@ -66,7 +66,7 @@ export const routes: RouteObject[] = [
             children: [
               {
                 element: <RequirePermission permission="dashboard.view" />,
-                children: [{ index: true, element: <Analytics /> }],
+                children: [{ index: true, element: <Dashboard /> }],
               },
               {
                 element: <RequirePermission permission="users_access.view" />,

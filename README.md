@@ -62,6 +62,9 @@ public/           static assets
 
 Absolute imports are enabled (for example `import paths from 'routes/paths'`).
 
+## Dashboard
+The home page (`/`, permission `dashboard.view`) shows live numbers from `GET /admin/dashboard`: a greeting and a period picker (this page only), eight KPI cards with the change against the previous period, four charts (revenue and new schools for the last 12 months, subscriptions by status, schools per plan), a Needs attention list with links, recent activity, latest schools and payments, live announcements and quick actions. A block appears only when the admin may see its data (the server sends `null` otherwise). Revenue is shown without GST; Recurring revenue is the monthly amount without GST of Active subscriptions. Code: `src/pages/dashboard/Dashboard.tsx`, `src/components/sections/dashboard/`, `src/hooks/useDashboard.ts`, `src/services/dashboardService.ts`.
+
 ## Users & Access
 
 - **Users** (`/users`, needs `users_access.view`): staff list with search, status filter and pages; add, edit, activate or deactivate, delete. Add staff takes you to the detail page to choose permissions.
@@ -120,7 +123,6 @@ Removed or replaced so nothing depends on the template author's services or paid
 
 ## To do before production
 
-- Replace the remaining demo pages and data (Dashboard) with real API calls
 - Replace the placeholder logo and demo illustrations with Bubbly assets (the logo and favicon are already Bubbly's)
 - Self-host the Google Fonts currently loaded in `index.html` (privacy and speed)
 - Add a real documentation link or remove remaining demo pages
