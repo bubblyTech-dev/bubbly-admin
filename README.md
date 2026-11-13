@@ -160,6 +160,7 @@ Other libraries (React, MUI, Emotion, ECharts, Iconify and others) are open sour
 - Files: `RecordOfflinePaymentDialog.tsx`, `RecordOfflinePaymentButton.tsx`, `SourceChip.tsx` in `src/components/sections/billing/`, `ChangeExpiryDialog.tsx` in `src/components/sections/subscriptions/`.
 
 ## Analytics and Reports (framework)
+- Report areas added from `src/features/reports/areas`: Inquiries (list, by source/status/owner, response times, spam), Announcements (history, live now), User & Access (staff directory, permission matrix, login history, active sessions, inactive staff), Audit (log export, sensitive actions), System (webhook event log).
 - **Analytics** menu (after Dashboard) and **Reports** menu (last): generic pages driven by config files in `src/features/analytics/areas` and `src/features/reports/areas`; adding a file adds a page. Backend datasets and reports are files too (see `backend/claude/07-analytics-and-reports.md`).
 - A **global filter bar** sits at the top of every page: date pills (Today, 7 days, 30 days, 90 days, 12 months, This month, Last month, This FY, Custom), compare with the previous period, plan / status / source (only where a dataset supports them) and Reset. The filters live in the address and are remembered in the browser.
 - The **Export** menu at the right of the bar downloads the current data as **CSV** or **Excel**. It is hidden without `reports.export`. Every download is recorded in the audit log.
