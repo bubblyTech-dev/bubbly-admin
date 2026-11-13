@@ -9,19 +9,9 @@ const AccountTab = (props: AccountTabProps) => {
     <Tab
       {...props}
       sx={{
-        px: 3,
-        py: 2,
         flexDirection: 'row',
         justifyContent: 'flex-start',
-        gap: 2,
-        borderRadius: 2,
-        fontWeight: 700,
-        color: 'text.primary',
-        bgcolor: 'background.elevation2',
-        [`&.${tabClasses.selected}`]: {
-          bgcolor: 'background.elevation3',
-          color: 'inherit',
-        },
+        gap: 1.5,
         [`& .${tabClasses.icon}`]: {
           mb: 0,
         },

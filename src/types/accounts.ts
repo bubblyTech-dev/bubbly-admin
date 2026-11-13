@@ -11,15 +11,7 @@ export interface AccountTab {
 }
 
 export interface PersonalInfo {
-  firstName: string;
-  lastName: string;
-  userName: string;
-  country: string;
-  state: string;
-  city: string;
-  street: string;
-  zip: string;
-  phoneNumber: string;
-  primaryEmail: string;
-  secondaryEmail: string;
+  name: string;
+  phone: string;
+  email: string;
 }

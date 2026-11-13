@@ -17,11 +17,21 @@ interface AccountDialogProps extends DialogProps {
   subtitle?: ReactNode;
   handleConfirm?: () => void;
   handleDiscard?: () => void;
+  confirming?: boolean;
 }
 
 const AccountDialog = (props: AccountDialogProps) => {
-  const { title, subtitle, children, sx, open, handleDialogClose, handleConfirm, handleDiscard } =
-    props;
+  const {
+    title,
+    subtitle,
+    children,
+    sx,
+    open,
+    handleDialogClose,
+    handleConfirm,
+    handleDiscard,
+    confirming = false,
+  } = props;
 
   return (
     <Dialog
@@ -66,11 +76,11 @@ const AccountDialog = (props: AccountDialogProps) => {
           p: 3,
         }}
       >
-        <Button variant="soft" color="neutral" onClick={handleDiscard}>
+        <Button variant="soft" color="neutral" onClick={handleDiscard} disabled={confirming}>
           Discard
         </Button>
-        <Button variant="contained" color="primary" onClick={handleConfirm}>
-          Confirm
+        <Button variant="contained" color="primary" onClick={handleConfirm} disabled={confirming}>
+          {confirming ? 'Saving…' : 'Confirm'}
         </Button>
       </DialogActions>
     </Dialog>

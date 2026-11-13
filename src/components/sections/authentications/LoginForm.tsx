@@ -1,140 +1,86 @@
-import { useNavigate } from 'react-router';
-import {
-  Box,
-  Button,
-  Checkbox,
-  FormControlLabel,
-  Link,
-  Stack,
-  TextField,
-  Typography,
-} from '@mui/material';
-import Grid from '@mui/material/Grid';
+import { useState } from 'react';
+import { Link as RouterLink, useLocation, useNavigate } from 'react-router';
+import { Alert, Box, Button, Link, Stack, TextField } from '@mui/material';
+import { parseApiError } from 'lib/api';
+import { useAuth } from 'providers/AuthProvider';
+import { landingPath } from 'routes/landing';
+import paths from 'routes/paths';
 import PasswordTextField from 'components/common/PasswordTextField';
+import AuthCard from './AuthCard';
 
-interface LoginFormProps {
-  defaultCredential?: { email: string; password: string };
-}
-const LoginForm = ({ defaultCredential }: LoginFormProps) => {
+const LoginForm = () => {
+  const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
+  const [fields, setFields] = useState<Record<string, string>>({});
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    navigate('/');
+    setError('');
+    setFields({});
+    setSubmitting(true);
+    try {
+      const user = await login(email, password);
+      const from = (location.state as { from?: string } | null)?.from;
+      navigate(user.mustChangePassword ? paths.changePassword : (from ?? landingPath(user)), {
+        replace: true,
+      });
+    } catch (err) {
+      const info = parseApiError(err);
+      setError(info.message);
+      setFields(info.fields);
+      setSubmitting(false);
+    }
   };
 
   return (
-    <Stack
-      direction="column"
-      sx={{
-        height: 1,
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        pt: { md: 10 },
-        pb: 10,
-      }}
-    >
-      <div />
-
-      <Grid
-        container
-        sx={{
-          maxWidth: '35rem',
-          rowGap: 4,
-          p: { xs: 3, sm: 5 },
-          mb: 5,
-        }}
-      >
-        <Grid size={12}>
-          <Stack
-            direction={{ xs: 'column', sm: 'row' }}
-            spacing={1}
-            sx={{
-              justifyContent: 'space-between',
-              alignItems: { xs: 'flex-start', sm: 'flex-end' },
-            }}
+    <AuthCard title="Log in" subtitle="Sign in to the Bubbly admin panel.">
+      <Box component="form" noValidate onSubmit={handleSubmit}>
+        <Stack direction="column" spacing={3}>
+          {error && <Alert severity="error">{error}</Alert>}
+          <TextField
+            fullWidth
+            size="large"
+            id="email"
+            type="email"
+            label="Email"
+            autoComplete="username"
+            autoFocus
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            error={Boolean(fields.email)}
+            helperText={fields.email}
+          />
+          <PasswordTextField
+            fullWidth
+            size="large"
+            id="password"
+            label="Password"
+            autoComplete="current-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            error={Boolean(fields.password)}
+            helperText={fields.password}
+          />
+          <Link
+            component={RouterLink}
+            to={paths.forgotPassword}
+            variant="subtitle2"
+            sx={{ alignSelf: 'center' }}
           >
-            <Typography variant="h4">Log in</Typography>
-          </Stack>
-        </Grid>
-
-        <Grid size={12}>
-          <Box component="form" noValidate onSubmit={handleSubmit}>
-            <Grid container>
-              <Grid
-                sx={{
-                  mb: 3,
-                }}
-                size={12}
-              >
-                <TextField
-                  fullWidth
-                  size="large"
-                  id="email"
-                  type="email"
-                  label="Email"
-                  defaultValue={defaultCredential?.email}
-                />
-              </Grid>
-              <Grid
-                sx={{
-                  mb: 2.5,
-                }}
-                size={12}
-              >
-                <PasswordTextField
-                  fullWidth
-                  size="large"
-                  id="password"
-                  label="Password"
-                  defaultValue={defaultCredential?.password}
-                />
-              </Grid>
-              <Grid
-                sx={{
-                  mb: 6,
-                }}
-                size={12}
-              >
-                <Stack
-                  spacing={1}
-                  sx={{
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                  }}
-                >
-                  <FormControlLabel
-                    control={<Checkbox name="checked" color="primary" size="small" />}
-                    label={
-                      <Typography
-                        variant="subtitle2"
-                        sx={{
-                          color: 'text.secondary',
-                        }}
-                      >
-                        Remember this device
-                      </Typography>
-                    }
-                  />
-
-                  <Link href="#!" variant="subtitle2">
-                    Forgot Password?
-                  </Link>
-                </Stack>
-              </Grid>
-              <Grid size={12}>
-                <Button fullWidth type="submit" size="large" variant="contained">
-                  Log in
-                </Button>
-              </Grid>
-            </Grid>
-          </Box>
-        </Grid>
-      </Grid>
-      <Link href="#!" variant="subtitle2">
-        Trouble signing in?
-      </Link>
-    </Stack>
+            Forgot Password?
+          </Link>
+          <Button fullWidth type="submit" size="large" variant="contained" disabled={submitting}>
+            {submitting ? 'Logging in…' : 'Log in'}
+          </Button>
+        </Stack>
+      </Box>
+    </AuthCard>
   );
 };
 

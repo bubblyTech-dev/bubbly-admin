@@ -1,12 +1,11 @@
 import { MouseEvent, useState } from 'react';
 import { NavLink, useLocation } from 'react-router';
 import { Box, Button, Menu, MenuItem, Toolbar } from '@mui/material';
-import sitemap, { SubMenuItem } from 'routes/sitemap';
+import { useAuth } from 'providers/AuthProvider';
+import sitemap, { SubMenuItem, filterByPermission } from 'routes/sitemap';
 import IconifyIcon from 'components/base/IconifyIcon';
 
 export const topNavHeight = 56;
-
-const topItems = sitemap.flatMap((menu) => menu.items.filter((item) => item.active !== false));
 
 const isItemActive = (item: SubMenuItem, pathname: string): boolean => {
   if (item.path && item.path !== '#!') {
@@ -70,6 +69,10 @@ const TopNavMenu = ({ item, active }: { item: SubMenuItem; active: boolean }) =>
 
 const TopNav = () => {
   const { pathname } = useLocation();
+  const { hasPermission } = useAuth();
+  const topItems = sitemap.flatMap((menu) =>
+    filterByPermission(menu.items, hasPermission).filter((item) => item.active !== false),
+  );
 
   return (
     <Toolbar

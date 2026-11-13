@@ -1,10 +1,9 @@
 import { Dispatch, SetStateAction, SyntheticEvent, useEffect } from 'react';
 import { TabList } from '@mui/lab';
-import { InputAdornment, PaperProps, Stack, SxProps, Typography, tabsClasses } from '@mui/material';
+import { PaperProps, Stack, SxProps, Typography, tabsClasses } from '@mui/material';
 import { accountTabs } from 'data/account/account-tabs';
 import { useBreakpoints } from 'providers/BreakpointsProvider';
 import IconifyIcon from 'components/base/IconifyIcon';
-import StyledTextField from 'components/styled/StyledTextField';
 import AccountTab from './common/AccountTab';
 
 interface SideTabListProps extends PaperProps {
@@ -46,24 +45,6 @@ const SideTabList = ({ setShowTabList, handleChange, sx }: SideTabListProps) => 
         Account Settings
       </Typography>
       <Stack direction="column" spacing={2} sx={{ width: 1 }}>
-        <StyledTextField
-          id="settings-search-box"
-          type="search"
-          placeholder="Find a setting"
-          fullWidth
-          size="large"
-          slotProps={{
-            input: {
-              startAdornment: (
-                <InputAdornment position="start">
-                  <IconifyIcon icon="material-symbols:search-rounded" />
-                </InputAdornment>
-              ),
-            },
-          }}
-          sx={{ maxWidth: { xs: 1, sm: 0.5, md: 1 } }}
-        />
-
         <TabList
           orientation="vertical"
           variant="scrollable"
@@ -87,7 +68,7 @@ const SideTabList = ({ setShowTabList, handleChange, sx }: SideTabListProps) => 
               icon={
                 <IconifyIcon
                   icon={tab.icon}
-                  sx={{ fontSize: 24, color: 'primary.dark', flexShrink: 0 }}
+                  sx={{ fontSize: 24, color: 'inherit', flexShrink: 0 }}
                 />
               }
               label={

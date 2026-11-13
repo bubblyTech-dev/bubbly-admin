@@ -12,6 +12,7 @@ import { useSettingsContext } from 'providers/SettingsProvider';
 import { COLLAPSE_NAVBAR } from 'reducers/SettingsReducer';
 import { SubMenuItem } from 'routes/sitemap';
 import IconifyIcon from 'components/base/IconifyIcon';
+import InquiryBadge from 'components/sections/inquiries/InquiryBadge';
 import { useNavContext } from '../NavProvider';
 import NavItemPopper from './NavItemPopper';
 
@@ -165,7 +166,7 @@ const NavItem = ({ item, level }: NavItemProps) => {
             <ListItemIcon
               sx={{
                 '& .iconify': {
-                  fontSize: sidenavCollapsed ? 24 : 14,
+                  fontSize: sidenavCollapsed ? 24 : 18,
                 },
               }}
             >
@@ -192,7 +193,7 @@ const NavItem = ({ item, level }: NavItemProps) => {
               sx={[
                 {
                   [`& .${listItemTextClasses.primary}`]: {
-                    typography: 'caption',
+                    typography: sidenavCollapsed ? 'caption' : 'body2',
                     fontWeight: 'medium',
                     whiteSpace: 'nowrap',
                     lineHeight: 1.3,
@@ -210,6 +211,7 @@ const NavItem = ({ item, level }: NavItemProps) => {
             >
               {item.name}
             </ListItemText>
+            {item.badge === 'inquiries' && <InquiryBadge />}
             {hasNestedItems && expandIcon}
           </Box>
           {hasNestedItems && sidenavCollapsed && (
