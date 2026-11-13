@@ -164,3 +164,6 @@ Other libraries (React, MUI, Emotion, ECharts, Iconify and others) are open sour
 - A **global filter bar** sits at the top of every page: date pills (Today, 7 days, 30 days, 90 days, 12 months, This month, Last month, This FY, Custom), compare with the previous period, plan / status / source (only where a dataset supports them) and Reset. The filters live in the address and are remembered in the browser.
 - The **Export** menu at the right of the bar downloads the current data as **CSV** or **Excel**. It is hidden without `reports.export`. Every download is recorded in the audit log.
 - Shared pieces in `src/components/analytics`: `GlobalFilterBar`, `ExportMenu`, `KpiCard`, `ChartCard`, `AnalyticsChart`, `DataTable`, `WidgetRenderer`, `ReportView`. Formatters (`formatRupeesFromPaise`, `formatCompactRupees`, ...) are in `src/lib/format.ts`. Charts take their colours from the theme.
+
+### Analytics pages (group B)
+Area configs in `src/features/analytics/areas/`: `renewals-churn`, `inquiries`, `plans-modules`, `staff-security`, `system-health`, `announcements` (datasets `renewals.churn`, `inquiries.overview`, `plans.overview`, `security.overview`, `system.health`, `announcements.overview`).
