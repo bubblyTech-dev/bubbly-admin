@@ -1,12 +1,13 @@
 import { AnalyticsAreaConfig } from 'types/analytics';
 
-// REFERENCE AREA CONFIG: copy this file to add an Analytics page. The file name does not matter; `area` is the address.
-// The widgets read from the dataset in backend/app/Services/V1/Admin/Analytics/definitions/schools.growth.js.
+// Analytics > Schools. Every widget reads from backend/app/Services/V1/Admin/Analytics/definitions/schools.growth.js,
+// where the rules behind each number are written down.
 const schools: AnalyticsAreaConfig = {
   area: 'schools',
   title: 'Schools',
   icon: 'material-symbols:school-outline',
-  description: 'How many schools joined, how the total grew and where they stand.',
+  description:
+    'How many schools joined, how the base grew, where they are, and how sign-ups turn into paying schools.',
   order: 10,
   primaryDataset: 'schools.growth',
   sections: [
@@ -30,8 +31,32 @@ const schools: AnalyticsAreaConfig = {
           type: 'kpi',
           dataset: 'schools.growth',
           path: 'kpis.activeSchools',
-          title: 'Active schools now',
-          icon: 'material-symbols:event-available-outline',
+          title: 'Active now',
+          icon: 'material-symbols:check-circle-outline-rounded',
+        },
+        {
+          type: 'kpi',
+          dataset: 'schools.growth',
+          path: 'kpis.daysToActivate',
+          title: 'Days to activate',
+          icon: 'material-symbols:timer-outline-rounded',
+          goodWhen: 'down',
+        },
+        {
+          type: 'kpi',
+          dataset: 'schools.growth',
+          path: 'kpis.suspendedSchools',
+          title: 'Suspended now',
+          icon: 'material-symbols:pause-circle-rounded',
+          goodWhen: 'down',
+        },
+        {
+          type: 'kpi',
+          dataset: 'schools.growth',
+          path: 'kpis.archivedSchools',
+          title: 'Archived now',
+          icon: 'material-symbols:history-rounded',
+          goodWhen: 'down',
         },
       ],
     },
@@ -43,7 +68,7 @@ const schools: AnalyticsAreaConfig = {
           dataset: 'schools.growth',
           path: 'series.newSchools',
           title: 'New schools',
-          subtitle: 'Schools that joined in each period',
+          subtitle: 'How many schools joined in each period',
           span: 2,
         },
         {
@@ -51,29 +76,86 @@ const schools: AnalyticsAreaConfig = {
           dataset: 'schools.growth',
           path: 'series.totalSchools',
           title: 'Total schools',
-          subtitle: 'The running total',
+          subtitle: 'The running total of schools',
           span: 2,
         },
       ],
     },
     {
-      title: 'Where they stand',
+      title: 'From sign-up to paying school',
+      widgets: [
+        {
+          type: 'bars',
+          dataset: 'schools.growth',
+          path: 'series.funnel',
+          title: 'Sign-up funnel',
+          subtitle: 'Of the schools that joined: with a subscription, active, and paid',
+          span: 2,
+        },
+        {
+          type: 'stacked',
+          dataset: 'schools.growth',
+          path: 'series.statusChanges',
+          title: 'Suspensions, archives and reactivations',
+          subtitle: 'Schools whose status was changed by your team',
+          span: 2,
+        },
+      ],
+    },
+    {
+      title: 'Who they are',
       widgets: [
         {
           type: 'donut',
           dataset: 'schools.growth',
           path: 'breakdowns.byStatus',
           title: 'Schools by status',
-          span: 1,
+          subtitle: 'As of the end of the period',
+          span: 2,
+        },
+        {
+          type: 'bars',
+          dataset: 'schools.growth',
+          path: 'series.byPlan',
+          title: 'Schools by plan',
+          subtitle: 'Schools with a running subscription',
+          span: 2,
+        },
+      ],
+    },
+    {
+      title: 'Where they are',
+      widgets: [
+        {
+          type: 'bars',
+          dataset: 'schools.growth',
+          path: 'series.byState',
+          title: 'Top 6 states',
+          subtitle: 'Schools per state',
+          span: 2,
         },
         {
           type: 'table',
           dataset: 'schools.growth',
-          path: 'tables.newSchools',
-          title: 'Newest schools',
-          subtitle: 'Joined in this period',
-          span: 3,
-          maxRows: 6,
+          path: 'tables.locations',
+          title: 'States and cities',
+          subtitle: 'Where your schools are, with how many are active and paying',
+          span: 2,
+          maxRows: 8,
+        },
+      ],
+    },
+    {
+      title: 'Biggest schools',
+      widgets: [
+        {
+          type: 'table',
+          dataset: 'schools.growth',
+          path: 'tables.topSchools',
+          title: 'Top schools by plan value',
+          subtitle: 'Monthly value of the active plan, without GST',
+          span: 4,
+          maxRows: 10,
         },
       ],
     },
