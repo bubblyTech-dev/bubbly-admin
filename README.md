@@ -167,6 +167,7 @@ Other libraries (React, MUI, Emotion, ECharts, Iconify and others) are open sour
 
 ## Analytics and Reports (framework)
 - **Analytics** menu (after Dashboard) and **Reports** menu (last): generic pages driven by config files in `src/features/analytics/areas` and `src/features/reports/areas`; adding a file adds a page. Backend datasets and reports are files too (see `backend/claude/07-analytics-and-reports.md`).
+- Report areas built on it (config files in `src/features/reports/areas`): Schools (5 reports), Plans (2), Subscriptions (5), Billing (7), GST & invoices (3), Renewals (3). Revenue is without GST; GST is its own column; money exports in rupees.
 - A **global filter bar** sits at the top of every page: date pills (Today, 7 days, 30 days, 90 days, 12 months, This month, Last month, This FY, Custom), compare with the previous period, plan / status / source (only where a dataset supports them) and Reset. The filters live in the address and are remembered in the browser.
 - The **Export** menu at the right of the bar downloads the current data as **CSV** or **Excel**. It is hidden without `reports.export`. Every download is recorded in the audit log.
 - Shared pieces in `src/components/analytics`: `GlobalFilterBar`, `ExportMenu`, `KpiCard`, `ChartCard`, `AnalyticsChart`, `DataTable`, `WidgetRenderer`, `ReportView`. Formatters (`formatRupeesFromPaise`, `formatCompactRupees`, ...) are in `src/lib/format.ts`. Charts take their colours from the theme.
