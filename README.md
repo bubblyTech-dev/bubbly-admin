@@ -177,3 +177,5 @@ Other libraries (React, MUI, Emotion, ECharts, Iconify and others) are open sour
 - Revenue is shown without GST. Monthly recurring revenue is an estimate from plan prices (see the comment at the top of `revenue.overview.js`).
 - Each page has KPI cards with change against the previous period, charts, and one or two tables; the Export button downloads the page's main table.
 
+### Analytics pages (group B)
+Area configs in `src/features/analytics/areas/`: `renewals-churn`, `inquiries`, `plans-modules`, `staff-security`, `system-health`, `announcements` (datasets `renewals.churn`, `inquiries.overview`, `plans.overview`, `security.overview`, `system.health`, `announcements.overview`).
