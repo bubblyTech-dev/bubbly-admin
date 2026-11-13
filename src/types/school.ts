@@ -90,3 +90,54 @@ export interface SchoolListParams {
   page?: number;
   perPage?: number;
 }
+
+// ---- per-school overrides of the plan's modules and limits ----
+
+export interface EntitlementSubscription {
+  uuid: string;
+  status: string;
+  planName: string;
+  endsAt: string | null;
+}
+
+export interface ModuleOverride {
+  access: 'grant' | 'revoke';
+  reason: string;
+  createdAt: string;
+  createdByName: string | null;
+}
+
+export interface EntitlementModule {
+  uuid: string;
+  key: string;
+  name: string;
+  description: string | null;
+  isCore: boolean;
+  includedByPlan: boolean;
+  override: ModuleOverride | null;
+  effective: boolean;
+}
+
+export interface LimitOverride {
+  // null = unlimited
+  value: number | null;
+  reason: string;
+  createdAt: string;
+  createdByName: string | null;
+}
+
+export interface EntitlementLimit {
+  key: string;
+  label: string;
+  // null = unlimited
+  planValue: number | null;
+  override: LimitOverride | null;
+  effectiveValue: number | null;
+  usage?: number;
+}
+
+export interface SchoolEntitlements {
+  subscription: EntitlementSubscription | null;
+  modules: EntitlementModule[];
+  limits: EntitlementLimit[];
+}

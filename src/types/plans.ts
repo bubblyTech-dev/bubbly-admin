@@ -17,6 +17,14 @@ export type PlanLimits = Record<string, number | null>;
 export interface PlanFeature {
   uuid: string;
   title: string;
+  // the module this feature unlocks for schools on the plan (null = text only)
+  moduleKey: string | null;
+}
+
+// what the form sends for one feature
+export interface PlanFeatureInput {
+  title: string;
+  moduleKey: string | null;
 }
 
 export interface Plan {
@@ -77,7 +85,7 @@ export interface PlanInput {
   sortOrder?: number;
   limits?: PlanLimits;
   // the whole list, in order (an empty list clears it)
-  features?: string[];
+  features?: PlanFeatureInput[];
 }
 
 export interface ModuleInput {

@@ -2,6 +2,7 @@ import api from 'lib/api';
 import {
   PagedResult,
   School,
+  SchoolEntitlements,
   SchoolInput,
   SchoolListParams,
   SchoolNote,
@@ -65,5 +66,36 @@ export const schoolService = {
   async usage(uuid: string): Promise<SchoolUsage> {
     const res = await api.get(`/admin/schools/${uuid}/usage`);
     return res.data.data.usage;
+  },
+
+  async entitlements(uuid: string): Promise<SchoolEntitlements> {
+    const res = await api.get(`/admin/schools/${uuid}/entitlements`);
+    return res.data.data;
+  },
+
+  async setModuleOverride(
+    uuid: string,
+    moduleUuid: string,
+    access: 'grant' | 'revoke',
+    reason: string,
+  ): Promise<void> {
+    await api.put(`/admin/schools/${uuid}/entitlements/modules/${moduleUuid}`, { access, reason });
+  },
+
+  async clearModuleOverride(uuid: string, moduleUuid: string): Promise<void> {
+    await api.delete(`/admin/schools/${uuid}/entitlements/modules/${moduleUuid}`);
+  },
+
+  async setLimitOverride(
+    uuid: string,
+    limitKey: string,
+    value: number | null,
+    reason: string,
+  ): Promise<void> {
+    await api.put(`/admin/schools/${uuid}/entitlements/limits/${limitKey}`, { value, reason });
+  },
+
+  async clearLimitOverride(uuid: string, limitKey: string): Promise<void> {
+    await api.delete(`/admin/schools/${uuid}/entitlements/limits/${limitKey}`);
   },
 };

@@ -18,7 +18,7 @@ import { paiseToRupees, rupeesToPaise } from 'lib/money';
 import { useAuth } from 'providers/AuthProvider';
 import paths from 'routes/paths';
 import { planService } from 'services/planService';
-import { Plan, PlanInput, PlanOptions } from 'types/plans';
+import { Plan, PlanFeatureInput, PlanInput, PlanOptions } from 'types/plans';
 import ConfirmDialog from 'components/common/ConfirmDialog';
 import PageHeader from 'components/common/PageHeader';
 import GatewayChip from 'components/sections/plans/GatewayChip';
@@ -57,7 +57,7 @@ const PlanForm = () => {
   const [isFeatured, setIsFeatured] = useState(false);
   const [sortOrder, setSortOrder] = useState('0');
   const [limits, setLimits] = useState<Record<string, LimitField>>({});
-  const [features, setFeatures] = useState<string[]>([]);
+  const [features, setFeatures] = useState<PlanFeatureInput[]>([]);
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -88,7 +88,12 @@ const PlanForm = () => {
         ]),
       ),
     );
-    setFeatures(source.features.map((feature) => feature.title));
+    setFeatures(
+      source.features.map((feature) => ({
+        title: feature.title,
+        moduleKey: feature.moduleKey ?? null,
+      })),
+    );
   };
 
   useEffect(() => {

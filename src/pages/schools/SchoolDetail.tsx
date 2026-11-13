@@ -21,6 +21,7 @@ import { SCHOOL_STATUS, School } from 'types/school';
 import IconifyIcon from 'components/base/IconifyIcon';
 import PageHeader from 'components/common/PageHeader';
 import PageLoader from 'components/loading/PageLoader';
+import SchoolEntitlements from 'components/sections/schools/SchoolEntitlements';
 import SchoolForm from 'components/sections/schools/SchoolForm';
 import SchoolNotes from 'components/sections/schools/SchoolNotes';
 import SchoolPrincipalCard from 'components/sections/schools/SchoolPrincipalCard';
@@ -29,7 +30,7 @@ import SchoolStatusHistory from 'components/sections/schools/SchoolStatusHistory
 import StatusChangeDialog from 'components/sections/schools/StatusChangeDialog';
 import SchoolSubscriptions from 'components/sections/subscriptions/SchoolSubscriptions';
 
-type TabKey = 'overview' | 'subscription' | 'notes' | 'history';
+type TabKey = 'overview' | 'subscription' | 'entitlements' | 'notes' | 'history';
 
 const SchoolDetail = () => {
   const { uuid = '' } = useParams();
@@ -123,6 +124,7 @@ const SchoolDetail = () => {
         <Tabs value={tab} onChange={(_event, value: TabKey) => setTab(value)} sx={{ mb: 4 }}>
           <Tab value="overview" label="Overview" />
           {hasPermission('subscriptions.view') && <Tab value="subscription" label="Subscription" />}
+          {hasPermission('schools.view') && <Tab value="entitlements" label="Features & limits" />}
           {hasPermission('schools.notes') && <Tab value="notes" label="Notes" />}
           <Tab value="history" label="Status history" />
         </Tabs>
@@ -135,6 +137,12 @@ const SchoolDetail = () => {
         )}
         {tab === 'subscription' && (
           <SchoolSubscriptions schoolUuid={school.uuid} schoolName={school.name} />
+        )}
+        {tab === 'entitlements' && (
+          <SchoolEntitlements
+            schoolUuid={school.uuid}
+            canEdit={hasPermission('schools.entitlements')}
+          />
         )}
         {tab === 'notes' && <SchoolNotes schoolUuid={school.uuid} />}
         {tab === 'history' && (

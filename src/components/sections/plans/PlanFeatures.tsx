@@ -1,25 +1,29 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Alert,
   Box,
   Button,
+  Chip,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   IconButton,
+  MenuItem,
   Stack,
   TextField,
   Typography,
 } from '@mui/material';
+import { moduleService } from 'services/moduleService';
+import { PlanFeatureInput, PlanModule } from 'types/plans';
 import IconifyIcon from 'components/base/IconifyIcon';
 
 const MAX_FEATURES = 30;
 const MAX_LENGTH = 200;
 
 interface PlanFeaturesProps {
-  features: string[];
-  onChange: (features: string[]) => void;
+  features: PlanFeatureInput[];
+  onChange: (features: PlanFeatureInput[]) => void;
   readOnly?: boolean;
   // an error from the server about the list, shown above it
   error?: string;
@@ -30,16 +34,40 @@ const PlanFeatures = ({ features, onChange, readOnly = false, error }: PlanFeatu
   // index -1 adds a new line, any other index edits that line, null keeps the popup closed
   const [editing, setEditing] = useState<number | null>(null);
   const [text, setText] = useState('');
+  const [moduleKey, setModuleKey] = useState('');
   const [problem, setProblem] = useState('');
+  const [modules, setModules] = useState<PlanModule[]>([]);
+
+  // only active, non-core modules can be linked (core modules are always included)
+  useEffect(() => {
+    let active = true;
+    moduleService
+      .list()
+      .then((list) => {
+        if (active) setModules(list);
+      })
+      .catch(() => {
+        // the link is optional: without the list the popup just offers "No module"
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const linkable = modules.filter((item) => item.status === 1 && !item.isCore);
+  const moduleName = (key: string | null) =>
+    key ? (modules.find((item) => item.moduleKey === key)?.name ?? key) : null;
 
   const openAdd = () => {
     setText('');
+    setModuleKey('');
     setProblem('');
     setEditing(-1);
   };
 
   const openEdit = (index: number) => {
-    setText(features[index]);
+    setText(features[index].title);
+    setModuleKey(features[index].moduleKey ?? '');
     setProblem('');
     setEditing(index);
   };
@@ -59,15 +87,17 @@ const PlanFeatures = ({ features, onChange, readOnly = false, error }: PlanFeatu
       return;
     }
     const repeated = features.some(
-      (existing, index) => index !== editing && existing.toLowerCase() === value.toLowerCase(),
+      (existing, index) =>
+        index !== editing && existing.title.toLowerCase() === value.toLowerCase(),
     );
     if (repeated) {
       setProblem('This feature is already in the list.');
       return;
     }
 
-    if (editing === -1) onChange([...features, value]);
-    else onChange(features.map((existing, index) => (index === editing ? value : existing)));
+    const item: PlanFeatureInput = { title: value, moduleKey: moduleKey || null };
+    if (editing === -1) onChange([...features, item]);
+    else onChange(features.map((existing, index) => (index === editing ? item : existing)));
     close();
   };
 
@@ -97,8 +127,9 @@ const PlanFeatures = ({ features, onChange, readOnly = false, error }: PlanFeatu
         )}
       </Stack>
       <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-        Short lines shown on the pricing page, for example "Unlimited attendance records". They are
-        only a description and do not switch anything on or off.
+        Short lines shown on the pricing page, for example "Unlimited attendance records". Linking a
+        feature to a module gives schools on this plan access to that module. Core modules are
+        always included.
       </Typography>
 
       {error && <Alert severity="error">{error}</Alert>}
@@ -125,7 +156,7 @@ const PlanFeatures = ({ features, onChange, readOnly = false, error }: PlanFeatu
         >
           {features.map((feature, index) => (
             <Stack
-              key={feature}
+              key={`${index}-${feature.title}`}
               direction="row"
               spacing={1}
               sx={{
@@ -141,8 +172,16 @@ const PlanFeatures = ({ features, onChange, readOnly = false, error }: PlanFeatu
                 sx={{ fontSize: 20, color: 'success.main', flexShrink: 0 }}
               />
               <Typography variant="body2" sx={{ flex: 1, minWidth: 0, wordBreak: 'break-word' }}>
-                {feature}
+                {feature.title}
               </Typography>
+              {feature.moduleKey && (
+                <Chip
+                  size="small"
+                  color="primary"
+                  label={moduleName(feature.moduleKey)}
+                  sx={{ flexShrink: 0, maxWidth: 140 }}
+                />
+              )}
               {!readOnly && (
                 <Stack direction="row" sx={{ flexShrink: 0 }}>
                   <IconButton
@@ -207,6 +246,26 @@ const PlanFeatures = ({ features, onChange, readOnly = false, error }: PlanFeatu
             helperText={problem || `${text.length}/${MAX_LENGTH}`}
             slotProps={{ htmlInput: { maxLength: MAX_LENGTH } }}
           />
+          <TextField
+            select
+            fullWidth
+            margin="dense"
+            id="plan-feature-module"
+            label="Unlocks module"
+            value={moduleKey}
+            onChange={(e) => setModuleKey(e.target.value)}
+            helperText="Linking a feature to a module gives schools on this plan access to that module. Core modules are always included."
+          >
+            <MenuItem value="">No module (text only)</MenuItem>
+            {moduleKey && !linkable.some((item) => item.moduleKey === moduleKey) && (
+              <MenuItem value={moduleKey}>{moduleName(moduleKey)}</MenuItem>
+            )}
+            {linkable.map((item) => (
+              <MenuItem key={item.uuid} value={item.moduleKey}>
+                {item.name}
+              </MenuItem>
+            ))}
+          </TextField>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
           <Button variant="soft" color="neutral" onClick={close}>
