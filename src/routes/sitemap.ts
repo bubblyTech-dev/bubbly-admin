@@ -1,6 +1,8 @@
 import { HTMLAttributeAnchorTarget } from 'react';
 import { SxProps } from '@mui/material';
-import paths, { rootPaths } from './paths';
+import { analyticsAreas } from 'features/analytics/registry';
+import { reportAreas } from 'features/reports/registry';
+import paths, { analyticsPath, reportsPath, rootPaths } from './paths';
 
 export interface SubMenuItem {
   name: string;
@@ -40,6 +42,22 @@ const sitemap: MenuItem[] = [
         icon: 'material-symbols:query-stats-rounded',
         permission: 'dashboard.view',
         active: true,
+      },
+      {
+        // one page per analytics area; the pages come from src/features/analytics/areas
+        name: 'Analytics',
+        pathName: 'analytics',
+        icon: 'material-symbols:trending-up-rounded',
+        permission: 'reports.view',
+        active: true,
+        items: analyticsAreas.map((area) => ({
+          name: area.title,
+          path: analyticsPath(area.area),
+          pathName: `analytics-${area.area}`,
+          icon: area.icon,
+          permission: 'reports.view',
+          active: true,
+        })),
       },
       {
         name: 'Management',
@@ -169,6 +187,22 @@ const sitemap: MenuItem[] = [
             active: true,
           },
         ],
+      },
+      {
+        // one page per report area; the pages come from src/features/reports/areas
+        name: 'Reports',
+        pathName: 'reports',
+        icon: 'material-symbols:lab-profile-outline-rounded',
+        permission: 'reports.view',
+        active: true,
+        items: reportAreas.map((area) => ({
+          name: area.title,
+          path: reportsPath(area.area),
+          pathName: `reports-${area.area}`,
+          icon: area.icon,
+          permission: 'reports.view',
+          active: true,
+        })),
       },
     ],
   },
