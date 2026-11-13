@@ -1,3 +1,5 @@
+import type { SubscriptionStatus } from 'types/subscriptions';
+
 // 1: Active, 2: Suspended, 3: Archived
 export const SCHOOL_STATUS = {
   ACTIVE: 1,
@@ -95,7 +97,7 @@ export interface SchoolListParams {
 
 export interface EntitlementSubscription {
   uuid: string;
-  status: string;
+  status: SubscriptionStatus;
   planName: string;
   endsAt: string | null;
 }

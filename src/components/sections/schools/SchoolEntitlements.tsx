@@ -26,6 +26,7 @@ import {
   EntitlementModule,
   SchoolEntitlements as Entitlements,
 } from 'types/school';
+import { subscriptionStatusColor, subscriptionStatusLabel } from 'types/subscriptions';
 import TableEmptyRow from 'components/common/TableEmptyRow';
 import PageLoader from 'components/loading/PageLoader';
 import EntitlementDialog from './EntitlementDialog';
@@ -192,8 +193,9 @@ const SchoolEntitlements = ({ schoolUuid, canEdit }: SchoolEntitlementsProps) =>
                 </Typography>
                 <Chip
                   size="small"
-                  label={subscription.status}
-                  sx={{ textTransform: 'capitalize', alignSelf: 'flex-start' }}
+                  label={subscriptionStatusLabel[subscription.status] ?? 'Unknown'}
+                  color={subscriptionStatusColor[subscription.status] ?? 'default'}
+                  sx={{ alignSelf: 'flex-start' }}
                 />
               </Stack>
               <Stack direction="column">
