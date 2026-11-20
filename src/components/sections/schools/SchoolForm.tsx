@@ -29,6 +29,7 @@ interface FormValues {
   country: string;
   gstNumber: string;
   timezone: string;
+  principalPassword: string;
 }
 
 const valuesOf = (school?: School): FormValues => ({
@@ -44,6 +45,7 @@ const valuesOf = (school?: School): FormValues => ({
   country: school?.country ?? 'India',
   gstNumber: school?.gstNumber ?? '',
   timezone: school?.timezone ?? 'Asia/Kolkata',
+  principalPassword: '',
 });
 
 const SchoolForm = ({ school, readOnly = false, onSaved }: SchoolFormProps) => {
@@ -88,6 +90,8 @@ const SchoolForm = ({ school, readOnly = false, onSaved }: SchoolFormProps) => {
     setSaving(true);
 
     const input: SchoolInput = { ...values };
+    // the Principal password is only sent when adding a school
+    if (school || !values.principalPassword) delete input.principalPassword;
     if (logo) input.logo = logo;
     if (removeLogo) input.removeLogo = true;
 
@@ -107,9 +111,10 @@ const SchoolForm = ({ school, readOnly = false, onSaved }: SchoolFormProps) => {
     setSaving(false);
   };
 
-  const field = (name: keyof FormValues, label: string, required = false) => (
+  const field = (name: keyof FormValues, label: string, required = false, type = 'text') => (
     <TextField
       fullWidth
+      type={type}
       id={`school-${name}`}
       label={label}
       required={required}
@@ -166,6 +171,15 @@ const SchoolForm = ({ school, readOnly = false, onSaved }: SchoolFormProps) => {
             <Grid size={{ xs: 12, md: 4 }}>{field('contactName', 'Contact name')}</Grid>
             <Grid size={{ xs: 12, md: 4 }}>{field('contactEmail', 'Contact email')}</Grid>
             <Grid size={{ xs: 12, md: 4 }}>{field('contactPhone', 'Contact phone')}</Grid>
+            {!school && (
+              <Grid size={{ xs: 12, md: 4 }}>
+                {field('principalPassword', 'Principal password', false, 'password')}
+                <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                  Optional. With the contact email it creates the Principal login now (8+ characters, a letter and a
+                  number). The Principal changes it at first login.
+                </Typography>
+              </Grid>
+            )}
           </Grid>
         </Stack>
 

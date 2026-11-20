@@ -34,6 +34,7 @@ export interface School {
 // what the add and edit form sends. Send only what you want to change.
 //   logo        the temp name returned by fileService.upload('clientLogo', ...)
 //   removeLogo  true to delete the current logo
+//   principalPassword  only when adding a school: creates the Principal login (contact email + this password)
 export interface SchoolInput {
   name?: string;
   contactName?: string;
@@ -49,6 +50,7 @@ export interface SchoolInput {
   timezone?: string;
   logo?: string;
   removeLogo?: boolean;
+  principalPassword?: string;
 }
 
 export interface SchoolNote {
